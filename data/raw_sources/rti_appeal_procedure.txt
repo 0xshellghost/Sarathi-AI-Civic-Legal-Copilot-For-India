@@ -1,0 +1,16 @@
+RTI FIRST APPEAL AND SECOND APPEAL PROCEDURE
+Authority: Central Information Commission (CIC) / State Information Commissions
+URL: https://cic.gov.in/rti-appeal-rules | Tier: 1 | Jurisdiction: Central / All India
+
+1. First Appeal (Section 19(1) of RTI Act 2005):
+- Ground for Appeal: If no response is received within 30 days, or if the applicant is aggrieved by the decision/rejection/exorbitant additional fee demanded by the CPIO.
+- Forum: First Appellate Authority (FAA), who is an officer senior in rank to the CPIO in the same public authority.
+- Filing Timeline: Within 30 days from the expiry of the 30-day response period or within 30 days from the date of receiving the CPIO's decision. (FAA may condone delay if sufficient cause is shown).
+- Fees: No application fee for filing First Appeal in Central Government offices.
+- Disposal Timeline: FAA must dispose of the appeal within 30 days of receipt, extendable up to a maximum of 45 days for reasons recorded in writing (Section 19(6)).
+
+2. Second Appeal (Section 19(3) of RTI Act 2005):
+- Ground: Aggrieved by FAA order, or non-disposal by FAA within 45 days.
+- Forum: Central Information Commission (for Central Public Authorities) or State Information Commission (for State bodies).
+- Filing Timeline: Within 90 days from the date of FAA decision or date when FAA decision was due.
+- Penalties (Section 20(1)): The Commission can impose a statutory penalty of ₹250 per day (up to maximum ₹25,000) on the CPIO for refusing application, delaying without reasonable cause, knowingly giving incorrect/incomplete information, or destroying records.

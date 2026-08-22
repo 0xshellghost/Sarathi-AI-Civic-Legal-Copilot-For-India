@@ -1,0 +1,20 @@
+E-DAAKHIL CONSUMER DISPUTES ONLINE FILING SYSTEM
+Authority: National Consumer Disputes Redressal Commission (NCDRC) / NIC
+URL: https://edaakhil.nic.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Digital Consumer Court Filing:
+e-Daakhil allows consumers to file complaints, pay court fees online, upload digital evidence, track hearing notices, and attend virtual hearings before District, State, and National Consumer Commissions from home.
+
+2. Mandatory Documents for Filing:
+(i) Complaint petition detailing facts, deficiency in service/defect in goods, and compensation claim;
+(ii) Verification affidavit signed by complainant;
+(iii) Copy of purchase invoice, receipt, warranty card, or booking receipt;
+(iv) Proof of communication with opposite party (emails, legal notice, NCH docket);
+(v) Identity & Address proof of complainant (Aadhaar, Voter ID, Passport).
+
+3. Statutory Fee Scale:
+- Claims up to ₹5 Lakh: NIL (₹0 court fee).
+- Claims ₹5 Lakh to ₹10 Lakh: ₹200.
+- Claims ₹10 Lakh to ₹20 Lakh: ₹400.
+- Claims ₹20 Lakh to ₹50 Lakh: ₹1,000.
+- Payment accepted via Bharatkosh payment gateway (UPI, Net Banking, Card).

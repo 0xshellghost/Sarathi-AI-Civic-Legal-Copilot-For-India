@@ -1,0 +1,17 @@
+CPGRAMS - CENTRALIZED PUBLIC GRIEVANCE REDRESS AND MONITORING SYSTEM
+Authority: Department of Administrative Reforms and Public Grievances (DARPG), Government of India
+URL: https://pgportal.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Overview:
+CPGRAMS (https://pgportal.gov.in) is the 24x7 single-window online grievance redressal platform connecting citizens with all Central Ministries, Departments, State Governments, and Union Territories.
+
+2. Grievances Covered:
+Delay in government services, non-issuance of certificates/pension/PF, ration card delays, civic infrastructure negligence, municipal harassment, road repairs, banking/insurance deficiencies, railway services, income tax refund delays.
+
+3. Resolution Timelines & Citizen Charter:
+- Maximum resolution timeline: 30 days from registration date (reduced from 45 days).
+- Real-time tracking with unique Registration Number (e.g. DARPG/E/2023/12345).
+- If grievance is closed unsatisfactorily, citizen has the statutory right to file an Appeal on CPGRAMS within 30 days of closure. An Appellate Officer reviews the resolution.
+
+4. Exclusions:
+Sub-judice matters (cases pending before courts), RTI matters (use RTI portal instead), religious/political disputes, suggestions.

@@ -1,0 +1,22 @@
+MODEL TENANCY ACT, 2021 (MTA) & TENANT RIGHTS FRAMEWORK
+Authority: Ministry of Housing and Urban Affairs, Government of India
+URL: https://mohua.gov.in/upload/uploadfiles/files/Model_Tenancy_Act_English.pdf | Tier: 1 | Jurisdiction: Central / Model Framework
+
+1. Security Deposit Cap (Section 11):
+- Residential Premises: Maximum security deposit is capped at not exceeding TWO months' rent.
+- Non-Residential (Commercial) Premises: Maximum security deposit capped at not exceeding SIX months' rent.
+- Refund of Deposit: The landlord MUST refund the security deposit to the tenant at the time of taking over vacant possession of the premises, after making necessary deductions for any legitimate unpaid rent or documented damage.
+
+2. Prohibition of Arbitrary Eviction & Forceful Possession (Section 21):
+- A landlord CANNOT evict a tenant during the tenancy agreement period without a formal eviction order from the Rent Authority or Rent Tribunal.
+- Forceful eviction by changing locks, using muscle power, or harassment is strictly illegal.
+
+3. Protection of Essential Services (Section 20):
+- Landlord or property manager CANNOT cut off or withhold any essential supply or service (water, electricity, passage, staircase, lift, sanitary services) to the tenant for non-payment of rent or any other dispute.
+- If landlord cuts services, Rent Authority can order immediate restoration and impose heavy compensation on landlord.
+
+4. Written Agreement Mandatory (Section 4):
+All new tenancies must be executed through a written agreement submitted to the Rent Authority within two months of execution.
+
+5. Landlord Right of Entry (Section 15):
+Landlord must provide at least 24 hours prior written or electronic notice before entering premises for inspection or maintenance, between 7:00 AM and 8:00 PM only.

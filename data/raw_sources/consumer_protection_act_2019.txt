@@ -1,0 +1,28 @@
+CONSUMER PROTECTION ACT, 2019 (Act No. 35 of 2019)
+Authority: Ministry of Consumer Affairs, Food and Public Distribution, Government of India
+URL: https://consumeraffairs.nic.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Definition of Consumer (Section 2(7)):
+Any person who buys goods or hires/avails services for consideration (paid or promised, part-paid or deferred). Includes offline and online e-commerce transactions, teleshopping, direct selling, and multi-level marketing. Does not include a person who obtains goods for resale or commercial purpose.
+
+2. Consumer Rights Recognized (Section 2(9)):
+(i) Right to safety against hazardous goods/services;
+(ii) Right to be informed about quality, quantity, potency, purity, standard and price;
+(iii) Right to be assured access to a variety of goods/services at competitive prices;
+(iv) Right to be heard and assured representation;
+(v) Right to seek redressal against unfair trade practice or restrictive trade practice or unscrupulous exploitation;
+(vi) Right to consumer awareness.
+
+3. Redressal Commission Hierarchy & Pecuniary Jurisdiction (2021 Notification):
+- District Consumer Disputes Redressal Commission (DCDRC): Claims up to ₹50 Lakh.
+- State Consumer Disputes Redressal Commission (SCDRC): Claims above ₹50 Lakh up to ₹2 Crore.
+- National Consumer Disputes Redressal Commission (NCDRC): Claims exceeding ₹2 Crore.
+
+4. Place of Filing (Section 34):
+A complaint can now be filed where the consumer resides or personally works for gain, in addition to where the seller resides or cause of action arose. Can be filed electronically via e-Daakhil portal.
+
+5. Limitation Period (Section 69):
+Complaint must be filed within 2 years from the date on which the cause of action arose.
+
+6. Unfair Trade Practices & Product Liability:
+Covers misleading advertisements, refusal to issue cash memo, refusal to refund defective goods or deficient services, unauthorized disclosure of personal consumer data, and product liability action against manufacturer, service provider, or product seller for harm caused by defective product.

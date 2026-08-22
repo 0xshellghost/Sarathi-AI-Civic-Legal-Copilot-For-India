@@ -1,0 +1,22 @@
+RTI ONLINE PORTAL RULES & APPLICATION PROCESS
+Authority: Department of Personnel and Training (DoPT), Ministry of Personnel, PG and Pensions
+URL: https://rtionline.gov.in/guidelines.php | Tier: 1 | Jurisdiction: Central / All India
+
+1. Digital Filing via RTI Online:
+Citizens can file RTI applications and First Appeals online to all Central Ministries, Departments, Public Sector Undertakings (PSUs), Nationalized Banks, and Central Autonomous Bodies via https://rtionline.gov.in.
+
+2. Online Fee Payment:
+- Central RTI fee is ₹10 per application.
+- Modes of payment: Internet Banking (SBI and associate banks), Debit/Credit Cards (Master/Visa/RuPay), UPI, and QR code scan.
+- BPL applicants upload scanned copy of BPL Card / Certificate; fee is ₹0.
+
+3. Text Limit and Supporting Document Upload:
+- Text area for information sought: Up to 3,000 characters.
+- If information requirement is lengthy, citizen can upload a PDF attachment up to 5 MB.
+
+4. Registration and Tracking:
+- Unique Registration Number (e.g., DOP&T/R/2023/12345) is generated immediately via SMS and email.
+- Real-time status tracking available under "View Status" using Registration Number and registered Email ID.
+
+5. Transfer of Application (Section 6(3)):
+- If the subject matter pertains to another Public Authority, CPIO must transfer the application within 5 days of receipt and inform the applicant immediately.

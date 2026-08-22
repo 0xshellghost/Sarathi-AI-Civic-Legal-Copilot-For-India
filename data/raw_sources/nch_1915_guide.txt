@@ -1,0 +1,21 @@
+NATIONAL CONSUMER HELPLINE (NCH 1915) GRIEVANCE REDRESSAL
+Authority: Department of Consumer Affairs, Government of India
+URL: https://consumerhelpline.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. What is NCH 1915?
+National Consumer Helpline is an alternate pre-litigation grievance redressal platform. Operates National Toll-Free Short Code 1915 (working all days 08:00 AM to 08:00 PM except national holidays).
+
+2. How to Register Grievance:
+- Call Toll-Free: 1915 or 1800-11-4000
+- SMS / WhatsApp: SMS to 8800001915 or chat on WhatsApp support
+- Web Portal: https://consumerhelpline.gov.in or INGRAM (Integrated Grievance Redress Mechanism)
+- Mobile App: NCH App or UMANG App
+
+3. Sectors Covered:
+E-commerce delivery/refunds, banking & credit cards, telecom & internet, airlines & railway tickets, consumer durables & warranties, insurance claim rejections, real estate builder delays, electricity & municipal utilities, ed-tech refund refusals.
+
+4. Convergence Companies:
+Over 1,000 top brands and e-commerce platforms have partnered with NCH for direct API-based resolution. Average resolution turnaround time is 15-45 days without court fees or advocate expenses.
+
+5. What if NCH does not resolve the issue?
+If pre-litigation mediation does not resolve the grievance or company refuses compliance, citizen can proceed to formal legal filing at District Consumer Commission via e-Daakhil (https://edaakhil.nic.in) using the NCH Docket Number as evidence of prior amicable attempt.

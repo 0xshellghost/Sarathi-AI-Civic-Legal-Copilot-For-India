@@ -1,0 +1,27 @@
+PRADHAN MANTRI KISAN SAMMAN NIDHI (PM-KISAN) SCHEME
+Authority: Ministry of Agriculture and Farmers Welfare, Government of India
+URL: https://pmkisan.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Scheme Objective & Financial Benefit:
+PM-KISAN provides income support of ₹6,000 per year to all landholding farmer families across India, payable in three equal four-monthly installments of ₹2,000 each directly transferred into Aadhaar-seeded bank accounts (DBT).
+
+2. Eligibility Criteria:
+- All landholding farmer families who own cultivable land registered in their name in the State/UT land records.
+- Aadhaar card mandatory.
+- Land ownership records (Khatauni / Jamabandi / 7/12 extract) verified by state revenue officials.
+- Active bank account linked with Aadhaar and NPCI DBT enabled.
+
+3. Exclusion Criteria (Higher Economic Status):
+(i) All institutional landholders;
+(ii) Farmer families where one or more members hold or held constitutional posts;
+(iii) Former and present Ministers, MPs, MLAs, MLCs, Mayors, Chairpersons of District Panchayats;
+(iv) Serving or retired officers and employees of Central/State Government, Ministries, PSUs, Autonomous bodies (excluding Class IV / Multi Tasking Staff);
+(v) All superannuated/retired pensioners whose monthly pension is ₹10,000 or more;
+(vi) All persons who paid Income Tax in the last assessment year;
+(vii) Professionals like Doctors, Engineers, Lawyers, Chartered Accountants, and Architects registered with professional bodies.
+
+4. Application Process:
+- Self-registration on PM-KISAN Portal (https://pmkisan.gov.in) under 'Farmers Corner' -> 'New Farmer Registration'.
+- Can also apply via local Common Service Centres (CSCs) or State Agriculture Officer.
+- Documents required: Aadhaar Card, Land Record Copy, Bank Passbook, Mobile Number.
+- Mandatory e-KYC via OTP on portal or biometric at CSC.

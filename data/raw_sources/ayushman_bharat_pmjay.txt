@@ -1,0 +1,20 @@
+AYUSHMAN BHARAT PRADHAN MANTRI JAN AROGYA YOJANA (AB PM-JAY)
+Authority: National Health Authority (NHA), Ministry of Health & Family Welfare
+URL: https://nha.gov.in/PM-JAY | Tier: 1 | Jurisdiction: Central / All India
+
+1. Health Cover & Benefits:
+AB PM-JAY provides health cover of ₹5,00,000 per family per year for secondary and tertiary care hospitalization across all empaneled public and private hospitals in India. Completely cashless and paperless at point of service. All senior citizens aged 70 and above across India are eligible for an additional top-up cover of ₹5,00,000 per year regardless of income.
+
+2. Eligibility Criteria:
+- Automatic entitlement based on Socio-Economic Caste Census (SECC 2011) deprivation and occupational criteria for rural and urban households, or active National Food Security Act (NFSA) / Ration Card lists recognized by State Government.
+- Rural D1 to D7 deprivation categories (kutcha house, female-headed household, SC/ST household, landless manual labour).
+- Urban occupational categories: ragpicker, beggar, domestic worker, street vendor, construction worker, transport worker, artisan.
+- All Indian senior citizens aged 70+ (Aadhaar authentication mandatory).
+
+3. Documents Required:
+- Aadhaar Card of each beneficiary.
+- Ration Card / Family ID / State Samagra ID / PM-JAY Beneficiary Identification Number.
+
+4. How to Verify & Generate Ayushman Card:
+- Check eligibility on https://beneficiary.nha.gov.in or call 14555.
+- Generate Ayushman Card at any empaneled government/private hospital or nearest CSC.

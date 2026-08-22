@@ -1,0 +1,18 @@
+EMPLOYEES PROVIDENT FUND (EPFO) WITHDRAWAL & EPFiGMS GRIEVANCES
+Authority: Employees' Provident Fund Organisation (EPFO), Ministry of Labour and Employment
+URL: https://epfigms.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Types of Claims & Online Settlement (Unified Member Portal):
+- Form 19 (PF Final Settlement after leaving service / unemployment > 2 months).
+- Form 10C (PFS Pension withdrawal benefit).
+- Form 31 (PF Partial Advance for house purchase, medical emergency, marriage, education, natural calamity).
+- Mandatory requirements: Active Universal Account Number (UAN), Aadhaar verified & seeded, bank account with IFSC seeded, mobile number linked.
+
+2. Settlement Timelines:
+- Statutory standard settlement timeline is 20 working days. Most auto-settled online claims process in 3 to 7 working days.
+
+3. EPFiGMS (EPF Internet Grievance Management System):
+- Official grievance portal: https://epfigms.gov.in
+- Register grievance using UAN or PPO Number.
+- Maximum redressal timeframe: 30 days.
+- If dissatisfied with Regional PF Commissioner's response, citizen can file First Appeal on EPFiGMS or escalate to CPGRAMS / file RTI with Ministry of Labour.

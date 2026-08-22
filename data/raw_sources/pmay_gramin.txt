@@ -1,0 +1,21 @@
+PRADHAN MANTRI AWAS YOJANA - GRAMIN (PMAY-G)
+Authority: Ministry of Rural Development, Government of India
+URL: https://pmayg.nic.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Objective & Financial Assistance:
+PMAY-G aims to provide a pucca house with basic amenities to all houseless households and households living in kutcha and dilapidated houses in rural areas.
+- Financial grant in Plain areas: ₹1,20,000 per unit.
+- Financial grant in Hilly / North Eastern / Difficult areas: ₹1,30,000 per unit.
+- Additional 90/95 days of unskilled labour wage support under MGNREGS (approx ₹20,000+).
+- Toilet construction grant of ₹12,000 under Swachh Bharat Mission - Gramin.
+
+2. Eligibility Criteria:
+- Rural households having no pucca house anywhere in India.
+- Priority to homeless, SC/ST, destitute, bonded laborers, widows, differently-abled.
+- Identified through SECC 2011 & Awaas+ survey verified by Gram Sabha.
+
+3. Exclusions:
+Families owning motorized 3/4-wheeler, mechanized 3/4-wheeler agricultural equipment, Kisan Credit Card with limit ≥ ₹50,000, government employee in family, non-agricultural enterprise registered with government, monthly income > ₹15,000, income tax payee, professional tax payee.
+
+4. Application / Selection:
+Gram Panchayat / Block Development Office (BDO) level registration on AwaasSoft portal with Aadhaar, MGNREGA Job Card, Bank Account, Land ownership document.

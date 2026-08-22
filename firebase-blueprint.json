@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "Source": {
+      "title": "Source",
+      "description": "Authoritative civic source, act, or portal guideline",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "issuingAuthority": { "type": "string", "maxLength": 200 },
+        "url": { "type": "string", "maxLength": 500 },
+        "tier": { "type": "number" },
+        "docType": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "publishedDate": { "type": "string" },
+        "lastVerified": { "type": "string" }
+      },
+      "required": ["title", "issuingAuthority", "url", "tier"]
+    },
+    "Chunk": {
+      "title": "Chunk",
+      "description": "Vectorized knowledge chunk from authoritative source",
+      "type": "object",
+      "properties": {
+        "sourceId": { "type": "string" },
+        "content": { "type": "string", "maxLength": 5000 },
+        "chunkIndex": { "type": "number" }
+      },
+      "required": ["sourceId", "content"]
+    },
+    "Scheme": {
+      "title": "Scheme",
+      "description": "Welfare scheme with deterministic rules",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 200 },
+        "authority": { "type": "string", "maxLength": 200 },
+        "applicationProcess": { "type": "string" }
+      },
+      "required": ["name", "authority"]
+    },
+    "Case": {
+      "title": "Case",
+      "description": "Citizen problem thread and action plan",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 250 },
+        "category": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["userId", "title", "category", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Authenticated citizen profile metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 250 },
+        "displayName": { "type": "string", "maxLength": 250 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["uid"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private citizen profile metadata scoped by userId"
+    },
+    "/sources/{sourceId}": {
+      "schema": "Source",
+      "description": "Public directory of official civic laws and guides"
+    },
+    "/chunks/{chunkId}": {
+      "schema": "Chunk",
+      "description": "Public searchable knowledge vectors"
+    },
+    "/schemes/{schemeId}": {
+      "schema": "Scheme",
+      "description": "Public database of welfare schemes"
+    },
+    "/cases/{caseId}": {
+      "schema": "Case",
+      "description": "Private citizen cases scoped by userId"
+    }
+  }
+}

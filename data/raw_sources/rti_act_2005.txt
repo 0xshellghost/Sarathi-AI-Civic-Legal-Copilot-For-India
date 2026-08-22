@@ -1,0 +1,34 @@
+RIGHT TO INFORMATION ACT, 2005 (Act No. 22 of 2005)
+Authority: Ministry of Personnel, Public Grievances and Pensions, Government of India
+URL: https://rti.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Purpose and Scope (Section 3):
+Every Indian citizen has the statutory right to request and receive information from Public Authorities. A Public Authority includes any authority, body or institution of self-government established under the Constitution, by Parliament, by State Legislature, or substantially financed by government funds.
+
+2. Definition of Information (Section 2(f)):
+Information means any material in any form, including records, documents, memos, e-mails, opinions, advices, press releases, circulars, orders, logbooks, contracts, reports, papers, samples, models, data material held in any electronic form, and information relating to any private body which can be accessed by a public authority under any other law.
+
+3. Right to Information Definition (Section 2(j)):
+Includes the right to:
+(i) Inspection of work, documents, records;
+(ii) Taking notes, extracts, or certified copies of documents or records;
+(iii) Taking certified samples of material;
+(iv) Obtaining information in electronic formats (disks, tapes, printouts).
+
+4. Application Procedure (Section 6(1)):
+An applicant must submit an application in writing or through electronic means in English or Hindi or in the official language of the area to the Central Public Information Officer (CPIO) or State Public Information Officer (SPIO).
+The applicant is NOT required to give any reason for requesting the information or any other personal details except those that may be necessary for contacting him/her (Section 6(2)).
+
+5. Statutory Timelines for Providing Information (Section 7(1)):
+- Standard Request: Within 30 days of receipt of the application.
+- Life or Liberty of a Person: Within 48 hours of receipt of the request.
+- If request is submitted through an Assistant Public Information Officer (APIO): Add 5 additional days (Total 35 days).
+- Deemed Refusal (Section 7(2)): Failure to provide information within the statutory period is treated as a deemed refusal.
+
+6. Application Fees and Free Information:
+- Central Government RTI Application Fee: ₹10 (cash, demand draft, banker's cheque, Indian Postal Order, or online payment via net banking / UPI / credit card).
+- Below Poverty Line (BPL) Citizens: Exempt from all RTI fees upon submitting proof (Section 7(5)).
+- If information is not provided within 30 days, the CPIO must provide the requested information FREE of charge (Section 7(6)).
+
+7. Exemptions from Disclosure (Section 8(1)):
+Exemptions include sovereignty/security of India, contempt of court, commercial confidence/trade secrets (unless larger public interest justifies), cabinet papers before decision, and personal information with no public activity/interest. Section 8(2) empowers disclosure if public interest outweighs protected harm. Section 24 exempts specified security and intelligence organizations except regarding allegations of corruption and human rights violations.

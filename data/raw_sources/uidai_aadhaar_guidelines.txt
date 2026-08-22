@@ -1,0 +1,16 @@
+AADHAAR (UIDAI) UPDATE, CORRECTION AND CITIZEN GRIEVANCE GUIDELINES
+Authority: Unique Identification Authority of India (UIDAI), Government of India
+URL: https://uidai.gov.in | Tier: 1 | Jurisdiction: Central / All India
+
+1. Online vs Offline Updates:
+- Online via myAadhaar Portal (https://myaadhaar.uidai.gov.in): Address update, document update (Proof of Identity & Proof of Address), language change. Free document updates periodically announced.
+- Aadhaar Seva Kendra / Enrolment Centre (Biometric): Mobile number update, email update, name correction (limited to 2 times), date of birth correction (limited to 1 time), gender correction (limited to 1 time), photo & biometric updates (mandatory at age 5 and 15).
+
+2. Timelines & Tracking:
+- Standard processing time: 90% of updates completed within 30 days.
+- Tracking using 14-digit Enrolment ID (EID) or Update Request Number (URN).
+
+3. Grievance Redressal:
+- UIDAI Toll-Free Helpline: 1947 (24x7 IVRS, agent support 7am-11pm).
+- Online Grievance: https://myaadhaar.uidai.gov.in/check-complaint-status
+- Email: help@uidai.gov.in

@@ -1,0 +1,10 @@
+{
+  "name": "Remix SARATHI",
+  "description": "A precisely implemented workspace application designed to meet all core specifications without simplification or omission.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
