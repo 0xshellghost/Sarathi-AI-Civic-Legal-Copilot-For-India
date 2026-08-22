@@ -142,6 +142,10 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         }),
       });
 
+      if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`Server returned an error (${res.status} ${res.statusText})`);
+      }
+      
       const data = await res.json();
       if (data.translatedText) {
         setTranslationsCache((prev) => ({

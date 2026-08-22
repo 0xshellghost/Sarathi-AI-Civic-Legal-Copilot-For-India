@@ -203,6 +203,9 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
   const fetchSources = async () => {
     try {
       const res = await fetch("/api/sources");
+      if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`Server returned an error (${res.status})`);
+      }
       const data = await res.json();
       if (data.sources) setSources(data.sources);
     } catch (e) {
@@ -333,6 +336,9 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
         const res = await fetch("/api/cases", {
           headers: { "x-sarathi-user-id": uid },
         });
+        if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+          throw new Error(`Server returned an error (${res.status})`);
+        }
         const data = await res.json();
         if (data.cases) setUserCases(data.cases);
       }
@@ -425,6 +431,10 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
           }),
         });
 
+        if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+          throw new Error(`Server returned an error (${res.status} ${res.statusText})`);
+        }
+        
         const data = await res.json();
         if (!data.error && data.reply) {
           if (data.problemAnalysis) setCurrentProblemAnalysis(data.problemAnalysis);
@@ -503,6 +513,10 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
         }),
       });
 
+      if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(`Server returned an error (${res.status} ${res.statusText})`);
+      }
+      
       const data = await res.json();
 
       if (data.error) {
@@ -675,6 +689,9 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(rtiPayload),
     });
+    if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
+      throw new Error(`Server returned an error (${res.status})`);
+    }
     return await res.json();
   };
 
