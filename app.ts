@@ -131,6 +131,24 @@ const app = express();
     }
   });
 
+  function stripUndefinedDeep<T>(value: T): T {
+    if (Array.isArray(value)) {
+      return value.map((item) => stripUndefinedDeep(item)).filter((item) => item !== undefined) as T;
+    }
+
+    if (value && typeof value === "object") {
+      const cleaned: Record<string, any> = {};
+      for (const [key, nestedValue] of Object.entries(value as Record<string, any>)) {
+        if (nestedValue !== undefined) {
+          cleaned[key] = stripUndefinedDeep(nestedValue);
+        }
+      }
+      return cleaned as T;
+    }
+
+    return value;
+  }
+
   /**
    * POST /api/chat
    * Main conversational turn: runs the full deterministic AI pipeline
@@ -316,7 +334,7 @@ const app = express();
 
       existingCase.problemAnalysis = problemAnalysis;
       existingCase.actionPlan = verification.verifiedActionPlan;
-      await adminDb.collection("cases").doc(activeCaseId).set(existingCase);
+        await adminDb.collection("cases").doc(activeCaseId).set(stripUndefinedDeep(existingCase));
 
       res.json({
         caseId: activeCaseId,

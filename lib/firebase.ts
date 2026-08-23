@@ -66,6 +66,24 @@ export const clientDb: Firestore = firebaseConfig.firestoreDatabaseId
 export const clientStorage: FirebaseStorage = getStorage(app);
 export let clientAnalytics: any = null;
 
+function stripUndefinedDeep<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => stripUndefinedDeep(item)).filter((item) => item !== undefined) as T;
+  }
+
+  if (value && typeof value === "object") {
+    const cleaned: Record<string, any> = {};
+    for (const [key, nestedValue] of Object.entries(value as Record<string, any>)) {
+      if (nestedValue !== undefined) {
+        cleaned[key] = stripUndefinedDeep(nestedValue);
+      }
+    }
+    return cleaned as T;
+  }
+
+  return value;
+}
+
 if (typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {
@@ -306,11 +324,11 @@ export async function saveCaseToFirestore(caseDoc: CaseDocument, userId?: string
   try {
     if (!caseDoc.caseId) return false;
     const docRef = doc(clientDb, "cases", caseDoc.caseId);
-    const payload = {
+    const payload = stripUndefinedDeep({
       ...caseDoc,
       userId: authUid,
       updatedAt: new Date().toISOString(),
-    };
+    });
     await setDoc(docRef, payload, { merge: true });
     serverDb.saveCase(payload);
     return true;
