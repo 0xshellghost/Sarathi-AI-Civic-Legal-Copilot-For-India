@@ -27,20 +27,8 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
   const [formData, setFormData] = useState<Record<string, any>>({
     age: "",
     familyIncome: "",
-    gender: "male",
-    category: "General",
-    isStudent: true,
-    livesInRuralArea: true,
-    hasExistingPuccaHouse: false,
-    ownsMotorizedVehicleOrTractor: false,
-    hasGovtEmployeeInFamily: false,
-    isLandholdingFarmer: true,
-    isIncomeTaxPayee: false,
-    isGovtEmployeeOrPensionerAbove10k: false,
-    isRegisteredProfessional: false,
-    isSeniorCitizen70Plus: false,
-    hasRationCardOrSECC: true,
-    isGovtEmployeeWithOtherHealthCover: false,
+    gender: "",
+    category: "",
   });
 
   const [analysis, setAnalysis] = useState<EligibilityAnalysis | null>(null);
@@ -129,7 +117,7 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
       {/* Scheme Description Banner */}
       {currentScheme && (
         <div className="mt-4 p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex-1 min-w-[240px]">
+          <div className="flex-1 min-w-60">
             <span className="font-semibold text-on-surface">{currentScheme.name}</span>
             <p className="text-on-surface-variant mt-0.5">{currentScheme.description}</p>
           </div>
@@ -141,7 +129,7 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
       <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left Column: General Demographics */}
         <div className="space-y-3.5 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant">
-          <h4 className="font-semibold text-xs text-on-surface uppercase tracking-wider text-secondary">
+          <h4 className="font-semibold text-xs text-secondary uppercase tracking-wider">
             1. Applicant Demographics & Household
           </h4>
 
@@ -179,6 +167,7 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
                 onChange={(e) => handleInputChange("gender", e.target.value)}
                 className="w-full px-3 py-1.5 text-xs rounded-lg border border-outline-variant bg-surface-container-lowest"
               >
+                <option value="">Select</option>
                 <option value="female">Female</option>
                 <option value="male">Male</option>
                 <option value="transgender">Transgender</option>
@@ -192,6 +181,7 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
                 onChange={(e) => handleInputChange("category", e.target.value)}
                 className="w-full px-3 py-1.5 text-xs rounded-lg border border-outline-variant bg-surface-container-lowest"
               >
+                <option value="">Select</option>
                 <option value="General">General / EWS</option>
                 <option value="OBC">OBC</option>
                 <option value="SC">SC</option>
@@ -203,7 +193,7 @@ export const EligibilityFlow: React.FC<EligibilityFlowProps> = ({
 
         {/* Right Column: Scheme-Specific Questions */}
         <div className="space-y-3 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant">
-          <h4 className="font-semibold text-xs text-on-surface uppercase tracking-wider text-secondary">
+          <h4 className="font-semibold text-xs text-secondary uppercase tracking-wider">
             2. Scheme Specific Conditions & Exclusions
           </h4>
 

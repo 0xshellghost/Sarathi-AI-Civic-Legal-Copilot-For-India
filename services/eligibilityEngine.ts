@@ -16,6 +16,21 @@ export function evaluateSchemeEligibility(
 
   const rules = scheme.eligibilityRules || {};
 
+  // 0. General Applicant Age Screening
+  if (userFields.age === undefined || userFields.age === null || userFields.age === "") {
+    missingFields.push("age");
+    unmatchedOrUnknownCriteria.push("Applicant age - Status: Unknown");
+  } else {
+    const ageNum = Number(userFields.age);
+    if (!Number.isFinite(ageNum) || ageNum <= 0 || ageNum > 120) {
+      unmatchedOrUnknownCriteria.push(`Age entered is invalid (Your age: ${userFields.age}).`);
+    } else if (ageNum < 18) {
+      unmatchedOrUnknownCriteria.push(`Age criterion not met (Your age: ${ageNum}, minimum required for general applicant screening: 18).`);
+    } else {
+      matchedCriteria.push(`Applicant age entered (${ageNum} years).`);
+    }
+  }
+
   // 1. Age Rule
   if (rules.age) {
     if (userFields.age === undefined || userFields.age === null || userFields.age === "") {
