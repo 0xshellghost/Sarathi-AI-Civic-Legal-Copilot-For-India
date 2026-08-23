@@ -137,16 +137,12 @@ export function useVoiceRecorder({
           setVoiceState("idle");
         } else {
           console.warn("[VOICE] Groq transcribe failed, falling back:", data.error);
-          // Fallback to browser recognition or set message
-          setErrorMessage(
-            data.error || "Unable to transcribe the audio right now. Please try again or type your message."
-          );
-          setVoiceState("error");
+          // Fallback to browser recognition
+          startBrowserSpeechRecognitionFallback();
         }
       } catch (err: any) {
         console.error("[VOICE] Transcription request error:", err);
-        setErrorMessage("Unable to transcribe the audio right now. Please try again or type your message.");
-        setVoiceState("error");
+        startBrowserSpeechRecognitionFallback();
       }
     },
     [targetLanguageCode, onTranscriptionSuccess]
