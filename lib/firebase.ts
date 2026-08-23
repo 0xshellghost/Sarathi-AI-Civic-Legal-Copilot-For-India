@@ -209,7 +209,11 @@ export async function checkRedirectAuthResult(): Promise<User | null> {
 
 /**
  * Sign In with Google Provider (Firebase Auth)
- * Supports popup (default) with timeout safeguard and redirect fallback
+ * 
+ * Strategy: Always prefer popup (works instantly, no page reload, no third-party 
+ * cookie issues). Falls back to redirect ONLY if popup is explicitly blocked by 
+ * the browser. The redirect path is unreliable in modern browsers due to 
+ * third-party storage partitioning (ITP/ETP), so popup is the primary method.
  */
 export async function signInWithGoogle(options?: {
   method?: "popup" | "redirect";
@@ -218,14 +222,17 @@ export async function signInWithGoogle(options?: {
   const method = options?.method || "popup";
   const timeoutMs = options?.timeoutMs || 45000;
 
-  console.log("[AUTH] Starting Google sign-in");
+  console.log(`[AUTH] Starting Google sign-in (method: ${method})`);
 
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
+  // Explicit redirect request (fallback button in UI)
   if (method === "redirect") {
     try {
+      console.log("[AUTH] Using redirect flow");
       await signInWithRedirect(clientAuth, provider);
+      // Page will navigate away; this return is never reached in success case
       return null;
     } catch (err: any) {
       formatFirebaseAuthError(err);
@@ -233,12 +240,13 @@ export async function signInWithGoogle(options?: {
     }
   }
 
-  // Popup method with timeout safeguard to prevent hanging
+  // Primary: Popup method with timeout safeguard
   try {
+    console.log("[AUTH] Using popup flow");
     const popupPromise = signInWithPopup(clientAuth, provider);
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => {
-        const timeoutErr = new Error("Authentication request timed out.");
+        const timeoutErr = new Error("Authentication request timed out. Please try again.");
         (timeoutErr as any).code = "auth/timeout";
         reject(timeoutErr);
       }, timeoutMs)
@@ -246,19 +254,31 @@ export async function signInWithGoogle(options?: {
 
     const result = await Promise.race([popupPromise, timeoutPromise]);
     if (result && result.user) {
-      console.log("[AUTH] Google sign-in successful");
-      console.log("[AUTH] UID available");
+      console.log("[AUTH] Google sign-in successful via popup");
       await initializeUserProfile(result.user);
       return result.user;
     }
     return null;
   } catch (error: any) {
+    // User intentionally closed the popup — not an error
     if (
       error.code === "auth/popup-closed-by-user" ||
       error.code === "auth/cancelled-popup-request"
     ) {
       console.log("[AUTH] Sign-in cancelled or closed by user.");
       return null;
+    }
+
+    // Popup was blocked by the browser — automatically fall back to redirect
+    if (error.code === "auth/popup-blocked") {
+      console.warn("[AUTH] Popup blocked by browser, falling back to redirect flow");
+      try {
+        await signInWithRedirect(clientAuth, provider);
+        return null;
+      } catch (redirectErr: any) {
+        formatFirebaseAuthError(redirectErr);
+        throw redirectErr;
+      }
     }
 
     const formattedMessage = formatFirebaseAuthError(error);
