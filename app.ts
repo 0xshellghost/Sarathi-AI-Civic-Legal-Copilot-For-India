@@ -32,8 +32,9 @@ const app = express();
   // Security & Middleware
   app.use(helmet({ 
     contentSecurityPolicy: false,
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
-  })); // Disabled CSP for React dev mode, and allow popups for Firebase Auth
+    crossOriginOpenerPolicy: false,
+    crossOriginEmbedderPolicy: false
+  })); // Disabled CSP for React dev mode, and allow popups/iframes for Firebase Auth
   app.use(cors());
   
   // Body parsers (JSON + high limit for base64 doc uploads)
