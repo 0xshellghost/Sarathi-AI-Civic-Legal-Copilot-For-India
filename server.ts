@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import app from "./app";
 
 async function startServer() {
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // ----------------------------------------------------
   // Vite Integration (Development vs Production)

@@ -333,8 +333,9 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
         }
       }
       if (uid) {
+        const token = await currentUser?.getIdToken() || "";
         const res = await fetch("/api/cases", {
-          headers: { "x-sarathi-user-id": uid },
+          headers: { "Authorization": `Bearer ${token}` },
         });
         if (!res.ok && !res.headers.get("content-type")?.includes("application/json")) {
           throw new Error(`Server returned an error (${res.status})`);
@@ -417,11 +418,12 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
       setIsRegeneratingMode(true);
       try {
         const uid = currentUser?.uid || "anon_citizen_" + Date.now();
+        const token = currentUser ? await currentUser.getIdToken() : "anon";
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-sarathi-user-id": uid,
+            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({
             message: lastUserMsg.content,
@@ -497,12 +499,13 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
 
     try {
       const uid = currentUser?.uid || "anon_citizen_" + Date.now();
+      const token = currentUser ? await currentUser.getIdToken() : "anon";
 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-sarathi-user-id": uid,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           message: query,
@@ -716,11 +719,12 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
     }
 
     try {
+      const token = currentUser ? await currentUser.getIdToken() : "anon";
       await fetch("/api/feedback", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-sarathi-user-id": uid,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ ...feedbackPayload, messageId, issueCategory }),
       });

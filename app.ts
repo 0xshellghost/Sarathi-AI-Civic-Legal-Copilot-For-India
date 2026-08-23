@@ -5,6 +5,8 @@
 
 import express from "express";
 import path from "path";
+import helmet from "helmet";
+import cors from "cors";
 
 import {
   analyzeProblem,
@@ -21,11 +23,16 @@ import { evaluateSchemeEligibility } from "./services/eligibilityEngine";
 import { generateRTIDocx, generateRTIPdf } from "./services/docgen";
 import { GroqWhisperService } from "./services/groqWhisper";
 import { serverDb } from "./lib/firebase";
+import { adminAuth, adminDb } from "./lib/firebase-admin";
 import { CONFIG } from "./lib/config";
 import { CaseDocument, ProblemAnalysis } from "./lib/schemas";
 
 const app = express();
 
+  // Security & Middleware
+  app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for React dev mode, can be strictly configured later
+  app.use(cors());
+  
   // Body parsers (JSON + high limit for base64 doc uploads)
   app.use(express.json({ limit: "25mb" }));
   app.use(express.urlencoded({ extended: true, limit: "25mb" }));
@@ -34,8 +41,31 @@ const app = express();
   ragEngine.initialize();
 
   // Basic authentication / user session header helper
+  const requireAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      (req as any).userId = "anon_citizen_" + (req.ip || "local").replace(/[^a-zA-Z0-9]/g, "");
+      return next();
+    }
+    const token = authHeader.split("Bearer ")[1];
+    if (token === "anon") {
+      (req as any).userId = "anon_citizen_" + (req.ip || "local").replace(/[^a-zA-Z0-9]/g, "");
+      return next();
+    }
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      (req as any).userId = decodedToken.uid;
+      next();
+    } catch (error) {
+      console.error("Auth verification failed:", error);
+      res.status(401).json({ error: "Unauthorized" });
+    }
+  };
+
+  app.use("/api", requireAuth);
+
   const getUserId = (req: express.Request): string => {
-    return (req.headers["x-sarathi-user-id"] as string) || "anon_citizen_" + (req.ip || "local").replace(/[^a-zA-Z0-9]/g, "");
+    return (req as any).userId || "anon_citizen_" + (req.ip || "local").replace(/[^a-zA-Z0-9]/g, "");
   };
 
   // ----------------------------------------------------
@@ -133,7 +163,8 @@ const app = express();
         req.query.simulate_429 === "true" ||
         Boolean(req.body.simulateGeminiFailure);
 
-      let existingCase = serverDb.getCase(activeCaseId);
+      const existingCaseDoc = await adminDb.collection("cases").doc(activeCaseId).get();
+      let existingCase = existingCaseDoc.exists ? (existingCaseDoc.data() as CaseDocument) : null;
       let conversationContext = "";
       if (existingCase && existingCase.messages && existingCase.messages.length > 0) {
         const recentMsgs = existingCase.messages.filter((m) => m.role !== "system").slice(-6);
@@ -285,7 +316,7 @@ const app = express();
 
       existingCase.problemAnalysis = problemAnalysis;
       existingCase.actionPlan = verification.verifiedActionPlan;
-      serverDb.saveCase(existingCase);
+      await adminDb.collection("cases").doc(activeCaseId).set(existingCase);
 
       res.json({
         caseId: activeCaseId,
@@ -501,13 +532,13 @@ const app = express();
    * GET /api/cases/:id
    * Fetches full case document
    */
-  app.get("/api/cases/:id", (req, res) => {
+  app.get("/api/cases/:id", async (req, res) => {
     try {
-      const caseDoc = serverDb.getCase(req.params.id);
-      if (!caseDoc) {
+      const caseDoc = await adminDb.collection("cases").doc(req.params.id).get();
+      if (!caseDoc.exists) {
         return res.status(404).json({ error: "Case not found." });
       }
-      res.json({ case: caseDoc });
+      res.json({ case: caseDoc.data() });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -517,10 +548,11 @@ const app = express();
    * GET /api/cases
    * Lists user cases
    */
-  app.get("/api/cases", (req, res) => {
+  app.get("/api/cases", async (req, res) => {
     try {
       const userId = getUserId(req);
-      const cases = serverDb.getUserCases(userId);
+      const snapshot = await adminDb.collection("cases").where("userId", "==", userId).get();
+      const cases = snapshot.docs.map(doc => doc.data());
       res.json({ cases });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -531,11 +563,12 @@ const app = express();
    * POST /api/feedback
    * Records user rating on an assistant message
    */
-  app.post("/api/feedback", (req, res) => {
+  app.post("/api/feedback", async (req, res) => {
     try {
       const { caseId, messageIndex, rating, comment, issueCategory } = req.body;
-      serverDb.saveFeedback({
-        feedbackId: "fb_" + Date.now(),
+      const feedbackId = "fb_" + Date.now();
+      await adminDb.collection("feedback").doc(feedbackId).set({
+        feedbackId,
         caseId: caseId || "general",
         messageIndex: messageIndex || 0,
         rating: rating || "helpful",
@@ -811,8 +844,9 @@ const app = express();
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          serverDb.saveCase(mockCase);
-          const retrieved = serverDb.getCase(testCaseId);
+          await adminDb.collection("cases").doc(testCaseId).set(mockCase);
+          const retrievedDoc = await adminDb.collection("cases").doc(testCaseId).get();
+          const retrieved = retrievedDoc.exists ? retrievedDoc.data() as CaseDocument : null;
           results["13_firebase_case_persistence"] = {
             passed: retrieved !== null && retrieved.caseId === testCaseId,
             caseId: retrieved?.caseId,
@@ -870,6 +904,12 @@ const app = express();
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
+  });
+
+  // Global Error Handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("[Express Global Error Handler]", err);
+    res.status(500).json({ error: "Internal Server Error" });
   });
 
 export default app;
