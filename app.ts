@@ -30,7 +30,10 @@ import { CaseDocument, ProblemAnalysis } from "./lib/schemas";
 const app = express();
 
   // Security & Middleware
-  app.use(helmet({ contentSecurityPolicy: false })); // Disabled CSP for React dev mode, can be strictly configured later
+  app.use(helmet({ 
+    contentSecurityPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+  })); // Disabled CSP for React dev mode, and allow popups for Firebase Auth
   app.use(cors());
   
   // Body parsers (JSON + high limit for base64 doc uploads)

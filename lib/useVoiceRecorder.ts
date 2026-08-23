@@ -103,6 +103,17 @@ export function useVoiceRecorder({
       setVoiceState("transcribing");
       setErrorMessage(null);
 
+      const effectiveMimeType =
+        mimeType.includes("wav")
+          ? "audio/wav"
+          : mimeType.includes("mp4") || mimeType.includes("m4a")
+            ? "audio/mp4"
+            : mimeType.includes("mp3") || mimeType.includes("mpeg")
+              ? "audio/mpeg"
+              : mimeType.includes("ogg")
+                ? "audio/ogg"
+                : "audio/webm";
+
       try {
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
@@ -124,7 +135,7 @@ export function useVoiceRecorder({
           },
           body: JSON.stringify({
             audioBase64,
-            mimeType,
+            mimeType: effectiveMimeType,
             targetLanguage: targetLanguageCode,
           }),
         });
@@ -137,6 +148,15 @@ export function useVoiceRecorder({
           setVoiceState("idle");
         } else {
           console.warn("[VOICE] Groq transcribe failed, falling back:", data.error);
+          const invalidMediaHint =
+            data.error && /not accepted|valid media|browser transcription/i.test(String(data.error));
+
+          if (invalidMediaHint) {
+            setErrorMessage("Audio format was not accepted. Switching to browser transcription.");
+            startBrowserSpeechRecognitionFallback();
+            return;
+          }
+
           setErrorMessage(
             data.error || "Unable to transcribe the audio right now. Please try again or type your message."
           );
@@ -144,8 +164,8 @@ export function useVoiceRecorder({
         }
       } catch (err: any) {
         console.error("[VOICE] Transcription request error:", err);
-        setErrorMessage("Unable to transcribe the audio right now. Please try again or type your message.");
-        setVoiceState("error");
+        setErrorMessage("Unable to transcribe the audio right now. Switching to browser transcription.");
+        startBrowserSpeechRecognitionFallback();
       }
     },
     [targetLanguageCode, onTranscriptionSuccess]

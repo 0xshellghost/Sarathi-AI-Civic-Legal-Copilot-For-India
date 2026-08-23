@@ -80,6 +80,19 @@ const WHISPER_LANGUAGE_MAP: Record<string, string> = {
   sanskrit: "sa",
 };
 
+function normalizeAudioMimeType(rawMimeType?: string): string {
+  const normalized = (rawMimeType || "audio/webm").toLowerCase();
+
+  if (normalized.includes("wav")) return "audio/wav";
+  if (normalized.includes("mp4") || normalized.includes("m4a")) return "audio/mp4";
+  if (normalized.includes("mp3") || normalized.includes("mpeg")) return "audio/mpeg";
+  if (normalized.includes("ogg")) return "audio/ogg";
+  if (normalized.includes("flac")) return "audio/flac";
+  if (normalized.includes("webm")) return "audio/webm";
+
+  return "audio/webm";
+}
+
 /**
  * Validates and normalizes SARATHI language input into an official Whisper ISO code or null.
  * Specifically rejects 'hinglish', 'code-mixed', 'romanized', 'auto', etc., returning null so
@@ -150,21 +163,22 @@ export class GroqWhisperService {
     }
 
     try {
-      console.log(`[VOICE] Recording received (${audioBuffer.length} bytes, format: ${mimeType})`);
+      const effectiveMimeType = normalizeAudioMimeType(mimeType);
+      console.log(`[VOICE] Recording received (${audioBuffer.length} bytes, format: ${effectiveMimeType})`);
 
       // Determine appropriate filename extension for Whisper
       let ext = "webm";
-      if (mimeType.includes("wav")) ext = "wav";
-      else if (mimeType.includes("mp4") || mimeType.includes("m4a")) ext = "m4a";
-      else if (mimeType.includes("mp3") || mimeType.includes("mpeg")) ext = "mp3";
-      else if (mimeType.includes("ogg")) ext = "ogg";
-      else if (mimeType.includes("flac")) ext = "flac";
+      if (effectiveMimeType.includes("wav")) ext = "wav";
+      else if (effectiveMimeType.includes("mp4")) ext = "m4a";
+      else if (effectiveMimeType.includes("mpeg")) ext = "mp3";
+      else if (effectiveMimeType.includes("ogg")) ext = "ogg";
+      else if (effectiveMimeType.includes("flac")) ext = "flac";
 
       const filename = `audio_${Date.now()}.${ext}`;
 
       // Create native FormData and File/Blob for Groq API
       const formData = new FormData();
-      const blob = new Blob([audioBuffer], { type: mimeType });
+      const blob = new Blob([audioBuffer], { type: effectiveMimeType });
       formData.append("file", blob, filename);
       formData.append("model", "whisper-large-v3");
       formData.append("response_format", "verbose_json");
@@ -204,6 +218,14 @@ export class GroqWhisperService {
             success: false,
             provider: "fallback",
             error: "Groq transcription rate limit reached. Please try again in a moment.",
+          };
+        }
+
+        if (response.status === 400 && /valid media file|could not process file|invalid_request_error/i.test(errorText)) {
+          return {
+            success: false,
+            provider: "fallback",
+            error: "The uploaded audio format was not accepted. Please speak again and the app will use browser transcription instead.",
           };
         }
 
