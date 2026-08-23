@@ -137,22 +137,37 @@ export function useVoiceRecorder({
           setVoiceState("idle");
         } else {
           console.warn("[VOICE] Groq transcribe failed, falling back:", data.error);
-          // Fallback to browser recognition
-          startBrowserSpeechRecognitionFallback();
+          setErrorMessage(
+            data.error || "Unable to transcribe the audio right now. Please try again or type your message."
+          );
+          setVoiceState("error");
         }
       } catch (err: any) {
         console.error("[VOICE] Transcription request error:", err);
-        startBrowserSpeechRecognitionFallback();
+        setErrorMessage("Unable to transcribe the audio right now. Please try again or type your message.");
+        setVoiceState("error");
       }
     },
     [targetLanguageCode, onTranscriptionSuccess]
   );
 
-  /**
-   * Start microphone recording
-   */
   const startRecording = useCallback(async () => {
     setErrorMessage(null);
+
+    // Check if the backend has Groq configured. If not, use native fallback directly.
+    try {
+      const statusRes = await fetch("/api/voice/status");
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        if (!statusData.configured) {
+          console.warn("[VOICE] Groq Whisper is not configured on server. Falling back to native browser speech recognition.");
+          startBrowserSpeechRecognitionFallback();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[VOICE] Could not verify voice status, proceeding with default behavior.", e);
+    }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       // Fallback directly to Web Speech API
