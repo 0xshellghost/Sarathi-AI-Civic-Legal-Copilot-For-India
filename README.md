@@ -770,10 +770,8 @@ It is **not a substitute for professional legal advice**, and final decisions re
 **Team:** Sudarshan
 
 **Members:**
-- `<MEMBER 1>`
-- `<MEMBER 2>`
-- `<MEMBER 3>`
-- `<MEMBER 4>`
+- `Lavay Garg`
+- `Harshvardhan`
 
 **Institution:** `IIIT Allahabad`
 
@@ -783,7 +781,7 @@ It is **not a substitute for professional legal advice**, and final decisions re
 
 **Live Demo:** `https://sarathi-3pxi.onrender.com/`
 
-**Demo Video:** `<DEMO_VIDEO_URL>`
+**Demo Video:** `https://youtu.be/TeHcmYwBGpE`
 
 **Repository:** `https://github.com/0xshellghost/Sarathi-AI-Civic-Legal-Copilot-For-India`
 
