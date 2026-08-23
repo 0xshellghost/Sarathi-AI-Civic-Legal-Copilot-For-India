@@ -4,6 +4,7 @@
  */
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import {
   getAuth,
   GoogleAuthProvider,
@@ -46,6 +47,7 @@ export const firebaseConfig = {
   firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId || undefined,
   storageBucket: firebaseAppletConfig.storageBucket || `${firebaseAppletConfig.projectId || "basic-sunset-48chg"}.firebasestorage.app`,
   messagingSenderId: firebaseAppletConfig.messagingSenderId || "",
+  measurementId: (firebaseAppletConfig as any).measurementId || "",
 };
 
 let app: FirebaseApp;
@@ -62,6 +64,15 @@ export const clientDb: Firestore = firebaseConfig.firestoreDatabaseId
   ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
   : getFirestore(app);
 export const clientStorage: FirebaseStorage = getStorage(app);
+export let clientAnalytics: any = null;
+
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      clientAnalytics = getAnalytics(app);
+    }
+  });
+}
 
 // Configure local browser persistence for Firebase Auth sessions
 try {

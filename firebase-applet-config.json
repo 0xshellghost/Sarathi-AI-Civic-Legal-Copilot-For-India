@@ -1,12 +1,12 @@
 {
-  "projectId": "steel-utility-493011-s7",
-  "appId": "1:87107739576:web:bc37332a64d7a040a7394d",
-  "apiKey": "AIzaSyD-3rTKm8FjopHwsql5jdbuyCaZzS9uLMs",
-  "authDomain": "steel-utility-493011-s7.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-remixsarathi-0a4927f4-798e-4d9c-b7dc-3d108138ae3b",
-  "storageBucket": "steel-utility-493011-s7.firebasestorage.app",
-  "messagingSenderId": "87107739576",
-  "measurementId": "",
-  "oAuthClientId": "87107739576-2ffidcjpiffo87rh5nlrg14blt388g4n.apps.googleusercontent.com",
+  "projectId": "sarathi-74aa2",
+  "appId": "1:587013853458:web:556e9e3fa56d15888d63cb",
+  "apiKey": "AIzaSyDWVr8IrkxrYOY8c7AjmxKLyWGx33myx1M",
+  "authDomain": "sarathi-74aa2.firebaseapp.com",
+  "firestoreDatabaseId": "",
+  "storageBucket": "sarathi-74aa2.firebasestorage.app",
+  "messagingSenderId": "587013853458",
+  "measurementId": "G-82THENDJFK",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
