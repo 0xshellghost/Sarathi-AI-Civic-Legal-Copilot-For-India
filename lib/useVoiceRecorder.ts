@@ -143,11 +143,11 @@ export function useVoiceRecorder({
         const data = await response.json();
 
         if (response.ok && data.success && data.text) {
-          console.log("[VOICE] Groq transcription received:", data.text.slice(0, 60));
+          console.log(`[VOICE] Transcription received (${data.provider || "sarvam-saaras"}):`, data.text.slice(0, 60));
           onTranscriptionSuccess(data.text);
           setVoiceState("idle");
         } else {
-          console.warn("[VOICE] Groq transcribe failed, falling back:", data.error);
+          console.warn("[VOICE] Server transcription failed, falling back:", data.error);
           const invalidMediaHint =
             data.error && /not accepted|valid media|browser transcription/i.test(String(data.error));
 
@@ -174,13 +174,13 @@ export function useVoiceRecorder({
   const startRecording = useCallback(async () => {
     setErrorMessage(null);
 
-    // Check if the backend has Groq configured. If not, use native fallback directly.
+    // Check if the backend has Sarvam or Groq configured. If neither, use native fallback directly.
     try {
       const statusRes = await fetch("/api/voice/status");
       if (statusRes.ok) {
         const statusData = await statusRes.json();
         if (!statusData.configured) {
-          console.warn("[VOICE] Groq Whisper is not configured on server. Falling back to native browser speech recognition.");
+          console.warn("[VOICE] No speech-to-text API configured on server. Falling back to native browser speech recognition.");
           startBrowserSpeechRecognitionFallback();
           return;
         }

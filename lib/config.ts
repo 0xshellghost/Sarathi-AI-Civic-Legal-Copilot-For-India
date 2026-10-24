@@ -13,7 +13,13 @@ export const CONFIG = {
   // Standing Disclaimer
   DISCLAIMER: "This tool provides general informational guidance based on publicly available sources and is not a substitute for professional legal advice.",
   
-  // Feature Flags & Speech-to-Text
+  // Feature Flags & Speech Providers
+  SARVAM_ENABLED: Boolean(process.env.SARVAM_API_KEY && process.env.SARVAM_API_KEY.trim().length > 0),
+  SARVAM_TTS_MODEL: process.env.SARVAM_TTS_MODEL || "bulbul:v3",
+  SARVAM_STT_MODEL: process.env.SARVAM_STT_MODEL || "saaras:v4",
+  SARVAM_DEFAULT_SPEAKER: process.env.SARVAM_TTS_DEFAULT_SPEAKER || "priya",
+  SARVAM_AVAILABLE_SPEAKERS: ["priya", "shubh", "ritu", "ratan", "ishita", "aditya"],
+
   GROQ_WHISPER_ENABLED: Boolean(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.trim().length > 0),
   GROQ_WHISPER_MODEL: "whisper-large-v3",
   STORAGE_RETENTION_HOURS: 48,

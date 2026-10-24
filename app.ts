@@ -21,7 +21,9 @@ import { ragEngine } from "./services/rag";
 import { verifyCitations } from "./services/citationVerifier";
 import { evaluateSchemeEligibility } from "./services/eligibilityEngine";
 import { generateRTIDocx, generateRTIPdf } from "./services/docgen";
+import crypto from "crypto";
 import { GroqWhisperService } from "./services/groqWhisper";
+import { SarvamService } from "./services/sarvam";
 import { serverDb } from "./lib/firebase";
 import { adminAuth, adminDb } from "./lib/firebase-admin";
 import { CONFIG } from "./lib/config";
@@ -448,11 +450,94 @@ const app = express();
     }
   });
 
+  // In-memory LRU cache for synthesized Sarvam audio (key = hash of text+lang+speaker)
+  const ttsAudioCache = new Map<string, { audioBase64: string; mimeType: string; speaker: string; language: string; createdAt: number }>();
+  const MAX_TTS_CACHE_ITEMS = 250;
+
+  function getTtsCacheKey(text: string, lang: string, speaker: string): string {
+    return crypto.createHash("sha256").update(`${text.trim()}__${lang}__${speaker}`).digest("hex");
+  }
+
+  /**
+   * POST /api/voice/tts
+   * Studio Text-to-Speech via Sarvam Bulbul v3
+   * Generates ultra-natural Indian voice output in 11 languages with persona control.
+   */
+  app.post("/api/voice/tts", async (req, res) => {
+    try {
+      const { text, targetLanguage = "Hindi", speaker = "priya", pace = 1.0 } = req.body;
+
+      if (!text || !text.trim()) {
+        return res.status(400).json({ success: false, error: "Missing 'text' in request body." });
+      }
+
+      if (!SarvamService.isConfigured()) {
+        return res.status(503).json({
+          success: false,
+          fallbackToBrowser: true,
+          error: "Sarvam AI is not configured on the server. Falling back to browser speech synthesis.",
+        });
+      }
+
+      // Check cache
+      const cacheKey = getTtsCacheKey(text, targetLanguage, speaker);
+      const cached = ttsAudioCache.get(cacheKey);
+      if (cached) {
+        return res.json({
+          success: true,
+          audioBase64: cached.audioBase64,
+          mimeType: cached.mimeType,
+          speaker: cached.speaker,
+          language: cached.language,
+          provider: "sarvam-bulbul",
+          cached: true,
+        });
+      }
+
+      const result = await SarvamService.textToSpeech({
+        text,
+        targetLanguageCode: targetLanguage,
+        speaker,
+        pace: Number(pace) || 1.0,
+      });
+
+      if (!result.success || !result.audioBase64) {
+        return res.status(502).json({
+          success: false,
+          fallbackToBrowser: true,
+          error: result.error || "Failed to generate speech with Sarvam AI.",
+        });
+      }
+
+      // Store in LRU cache
+      if (ttsAudioCache.size >= MAX_TTS_CACHE_ITEMS) {
+        const oldestKey = ttsAudioCache.keys().next().value;
+        if (oldestKey) ttsAudioCache.delete(oldestKey);
+      }
+      ttsAudioCache.set(cacheKey, {
+        audioBase64: result.audioBase64,
+        mimeType: result.mimeType || "audio/wav",
+        speaker: result.speaker || speaker,
+        language: result.language || targetLanguage,
+        createdAt: Date.now(),
+      });
+
+      res.json(result);
+    } catch (err: any) {
+      console.error("[VOICE TTS] Error:", err);
+      res.status(500).json({
+        success: false,
+        fallbackToBrowser: true,
+        error: "Internal server error during speech synthesis. Falling back to browser speech synthesis.",
+      });
+    }
+  });
+
   /**
    * POST /api/voice/transcribe
-   * Groq Whisper Speech-to-Text Endpoint
-   * Accepts audio payload (base64 or binary), validates constraints, and returns high-accuracy transcriptions
-   * across Indian languages (Hindi, English, Hinglish, Bengali, Tamil, Telugu, Marathi, etc.)
+   * Multi-provider Speech-to-Text Pipeline:
+   * 1. Sarvam Saaras v4 (First choice for Indian languages, native scripts & code-mixed speech)
+   * 2. Groq Whisper Large v3 (Secondary fallback)
    */
   app.post("/api/voice/transcribe", async (req, res) => {
     try {
@@ -468,7 +553,7 @@ const app = express();
       // Convert base64 to binary Buffer
       const audioBuffer = Buffer.from(audioBase64, "base64");
 
-      // Validate file size (max 25MB standard Whisper limit)
+      // Validate file size (max 25MB limit)
       if (audioBuffer.length > 25 * 1024 * 1024) {
         return res.status(400).json({
           success: false,
@@ -483,19 +568,40 @@ const app = express();
         });
       }
 
-      // Perform speech-to-text with Groq Whisper
-      const result = await GroqWhisperService.transcribeAudio(
-        audioBuffer,
-        mimeType,
-        targetLanguage,
-        prompt
-      );
+      // 1. Primary: Sarvam Saaras v4 (Trained natively for Indian languages and code-mixing)
+      if (SarvamService.isConfigured()) {
+        const sarvamResult = await SarvamService.transcribeAudio({
+          audioBuffer,
+          mimeType,
+          targetLanguage,
+          prompt,
+        });
 
-      if (!result.success) {
-        return res.status(500).json(result);
+        if (sarvamResult.success && sarvamResult.text) {
+          return res.json(sarvamResult);
+        }
+        console.warn("[VOICE] Sarvam Saaras transcription did not succeed, attempting Groq fallback:", sarvamResult.error);
       }
 
-      res.json(result);
+      // 2. Secondary: Groq Whisper Large v3
+      if (GroqWhisperService.isConfigured()) {
+        const groqResult = await GroqWhisperService.transcribeAudio(
+          audioBuffer,
+          mimeType,
+          targetLanguage,
+          prompt
+        );
+
+        if (groqResult.success) {
+          return res.json(groqResult);
+        }
+        console.warn("[VOICE] Groq Whisper fallback also failed:", groqResult.error);
+      }
+
+      res.status(500).json({
+        success: false,
+        error: "Unable to transcribe the audio right now. Please try again or type your message.",
+      });
     } catch (error: any) {
       console.error("[VOICE] /api/voice/transcribe exception:", error);
       res.status(500).json({
@@ -507,13 +613,31 @@ const app = express();
 
   /**
    * GET /api/voice/status
-   * Checks if Groq Whisper speech transcription is active and configured
+   * Comprehensive status for Voice Synthesis & Speech Recognition capabilities
    */
   app.get("/api/voice/status", (req, res) => {
+    const sarvamConfigured = SarvamService.isConfigured();
+    const groqConfigured = GroqWhisperService.isConfigured();
+
     res.json({
-      provider: "groq-whisper",
-      model: "whisper-large-v3",
-      configured: GroqWhisperService.isConfigured(),
+      configured: sarvamConfigured || groqConfigured,
+      sarvam: {
+        configured: sarvamConfigured,
+        ttsModel: process.env.SARVAM_TTS_MODEL || "bulbul:v3",
+        sttModel: process.env.SARVAM_STT_MODEL || "saaras:v4",
+        defaultSpeaker: process.env.SARVAM_TTS_DEFAULT_SPEAKER || "priya",
+        availableSpeakers: CONFIG.SARVAM_AVAILABLE_SPEAKERS,
+      },
+      groq: {
+        configured: groqConfigured,
+        model: "whisper-large-v3",
+      },
+      activeTtsProvider: sarvamConfigured ? "sarvam-bulbul" : "browser-speech-synthesis",
+      activeSttProvider: sarvamConfigured
+        ? "sarvam-saaras"
+        : groqConfigured
+        ? "groq-whisper"
+        : "browser-speech-recognition",
     });
   });
 
@@ -897,15 +1021,45 @@ const app = express();
           results["14_firebase_document_persistence"] = { passed: false, error: err.message };
         }
       },
+      // 15. Sarvam Bulbul TTS Studio Voice Readiness
+      async () => {
+        try {
+          const isConfigured = SarvamService.isConfigured();
+          results["15_sarvam_tts_readiness"] = {
+            passed: isConfigured,
+            configured: isConfigured,
+            provider: "sarvam-bulbul",
+            model: process.env.SARVAM_TTS_MODEL || "bulbul:v3",
+            defaultSpeaker: process.env.SARVAM_TTS_DEFAULT_SPEAKER || "priya",
+          };
+        } catch (err: any) {
+          results["15_sarvam_tts_readiness"] = { passed: false, error: err.message };
+        }
+      },
+      // 16. Sarvam Saaras STT Indic Recognition Readiness
+      async () => {
+        try {
+          const isConfigured = SarvamService.isConfigured();
+          results["16_sarvam_stt_readiness"] = {
+            passed: isConfigured,
+            configured: isConfigured,
+            provider: "sarvam-saaras",
+            model: process.env.SARVAM_STT_MODEL || "saaras:v4",
+          };
+        } catch (err: any) {
+          results["16_sarvam_stt_readiness"] = { passed: false, error: err.message };
+        }
+      },
     ];
 
     await Promise.allSettled(tests.map((t) => t()));
 
     const allPassed = Object.values(results).every((r: any) => r.passed);
+    const passedCount = Object.values(results).filter((r: any) => r.passed).length;
     return {
-      status: allPassed ? "ALL_14_TESTS_PASSED" : "PARTIAL_TESTS_PASSED",
-      totalTests: 14,
-      passedCount: Object.values(results).filter((r: any) => r.passed).length,
+      status: allPassed ? `ALL_${tests.length}_TESTS_PASSED` : "PARTIAL_TESTS_PASSED",
+      totalTests: tests.length,
+      passedCount,
       results,
     };
   };

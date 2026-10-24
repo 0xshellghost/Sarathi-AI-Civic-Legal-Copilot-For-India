@@ -1,22 +1,32 @@
 /**
- * SARATHI - Browser-Native Text-to-Speech (TTS) Engine
+ * SARATHI - Advanced Voice & Text-to-Speech Engine
  * 
- * 100% Client-Side Native Web Speech API Implementation:
- * - Uses window.speechSynthesis and SpeechSynthesisUtterance
- * - Zero API keys, zero backend dependencies, zero network latency
- * - Intelligent voice selection prioritizing soft, natural Indian female voices
- * - Clean text preprocessing (strips markdown, URLs, citation codes, preserves Acts/Schemes)
- * - Automatic sequential sentence chunking for long/advanced responses
- * - Full playback controls: Listen, Pause, Resume, Listen Again, and Stop
+ * Dual-Engine Hybrid Architecture:
+ * 1. STUDIO INDIC VOICE (Primary):
+ *    - Powered by Sarvam AI Bulbul v3 via backend /api/voice/tts
+ *    - Real human-grade, expressive Indian voices in 11 Indian languages (Hindi, Bengali,
+ *      Tamil, Telugu, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Indian English)
+ *    - Personas: Priya (warm female), Shubh (clear male), Ritu, Ratan, Ishita, Aditya
+ *    - In-memory audio caching with instant zero-latency replays
+ *    - Audio progress tracking & controls (Play, Pause, Resume, Stop, Replay)
+ * 
+ * 2. CLIENT-SIDE WEB SPEECH API (Automatic Offline Fallback):
+ *    - Zero-dependency client-side SpeechSynthesis fallback
+ *    - Activates transparently if offline, rate-limited, or unconfigured
  */
 
-export type VoicePlaybackStatus = "idle" | "playing" | "paused" | "finished";
+export type VoicePlaybackStatus = "idle" | "loading" | "playing" | "paused" | "finished";
+export type AudioSourceType = "studio" | "browser" | null;
 
 export interface VoiceServiceState {
   status: VoicePlaybackStatus;
   activeMessageId: string | null;
   language: string;
   voiceName: string | null;
+  audioSource: AudioSourceType;
+  speaker: string;
+  progress: number;
+  duration: number;
   isAvailable: boolean;
 }
 
@@ -25,44 +35,103 @@ export class VoiceService {
   private activeMessageId: string | null = null;
   private activeLanguage = "en-IN";
   private activeVoiceName: string | null = null;
-  private isAvailable = false;
+  private audioSource: AudioSourceType = null;
+  private currentSpeaker = "priya";
+  private voiceMode: "studio" | "browser" = "studio";
+  private isAvailable = true;
 
+  // HTML5 Audio Element for Sarvam Studio Voice
+  private audioElement: HTMLAudioElement | null = null;
+  private audioCache = new Map<string, string>(); // key -> base64
+  private currentProgress = 0;
+  private currentDuration = 0;
+
+  // Browser SpeechSynthesis state (fallback)
   private availableVoices: SpeechSynthesisVoice[] = [];
   private textChunks: string[] = [];
   private currentChunkIndex = 0;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
 
+  // Listeners & callbacks
   private stateListeners: Set<(state: VoiceServiceState) => void> = new Set();
   private onEndCallback: (() => void) | null = null;
   private onErrorCallback: ((err: any) => void) | null = null;
 
   constructor() {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      this.isAvailable = true;
-      this.initVoices();
-      if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = () => this.initVoices();
+    if (typeof window !== "undefined") {
+      // Initialize speaker from localStorage
+      try {
+        const savedSpeaker = localStorage.getItem("sarathi_voice_speaker");
+        if (savedSpeaker) this.currentSpeaker = savedSpeaker;
+        const savedMode = localStorage.getItem("sarathi_voice_mode");
+        if (savedMode === "studio" || savedMode === "browser") this.voiceMode = savedMode;
+      } catch (e) {
+        // Ignore storage access errors
       }
-    } else {
-      this.isAvailable = false;
+
+      // Initialize HTML5 audio element
+      this.initAudioElement();
+
+      // Initialize browser SpeechSynthesis voices
+      if ("speechSynthesis" in window) {
+        this.initVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+          window.speechSynthesis.onvoiceschanged = () => this.initVoices();
+        }
+      }
     }
   }
 
-  /**
-   * Initializes and caches the device's available SpeechSynthesis voices
-   */
+  private initAudioElement() {
+    if (typeof window === "undefined") return;
+    this.audioElement = new Audio();
+
+    this.audioElement.addEventListener("play", () => {
+      this.setStatus("playing");
+    });
+
+    this.audioElement.addEventListener("pause", () => {
+      if (this.status === "playing") {
+        this.setStatus("paused");
+      }
+    });
+
+    this.audioElement.addEventListener("timeupdate", () => {
+      if (!this.audioElement) return;
+      const duration = this.audioElement.duration || 0;
+      const current = this.audioElement.currentTime || 0;
+      this.currentDuration = duration;
+      this.currentProgress = duration > 0 ? (current / duration) * 100 : 0;
+      this.notifyState();
+    });
+
+    this.audioElement.addEventListener("ended", () => {
+      this.currentProgress = 100;
+      this.setStatus("finished");
+      this.onEndCallback?.();
+    });
+
+    this.audioElement.addEventListener("error", (e) => {
+      console.warn("[VOICE] Audio element playback error:", e);
+      // If studio audio fails to play, attempt browser fallback
+      if (this.audioSource === "studio") {
+        console.log("[VOICE] Studio audio failed to play, switching to browser fallback...");
+        this.fallbackToBrowserSpeech();
+      } else {
+        this.setStatus("idle");
+        this.onErrorCallback?.(e);
+      }
+    });
+  }
+
   private initVoices() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     const voices = window.speechSynthesis.getVoices();
     if (voices && voices.length > 0) {
       this.availableVoices = voices;
-      console.log(`[VOICE] Available voices: ${voices.length}`);
     }
   }
 
-  /**
-   * Refreshes the voices cache if empty
-   */
   public getVoices(): SpeechSynthesisVoice[] {
     if (this.availableVoices.length === 0 && typeof window !== "undefined" && "speechSynthesis" in window) {
       this.availableVoices = window.speechSynthesis.getVoices();
@@ -82,6 +151,10 @@ export class VoiceService {
       activeMessageId: this.activeMessageId,
       language: this.activeLanguage,
       voiceName: this.activeVoiceName,
+      audioSource: this.audioSource,
+      speaker: this.currentSpeaker,
+      progress: this.currentProgress,
+      duration: this.currentDuration,
       isAvailable: this.isAvailable,
     };
   }
@@ -102,6 +175,30 @@ export class VoiceService {
     });
   }
 
+  public getSpeaker(): string {
+    return this.currentSpeaker;
+  }
+
+  public setSpeaker(speaker: string) {
+    this.currentSpeaker = speaker.toLowerCase();
+    try {
+      localStorage.setItem("sarathi_voice_speaker", this.currentSpeaker);
+    } catch {}
+    this.notifyState();
+  }
+
+  public getVoiceMode(): "studio" | "browser" {
+    return this.voiceMode;
+  }
+
+  public setVoiceMode(mode: "studio" | "browser") {
+    this.voiceMode = mode;
+    try {
+      localStorage.setItem("sarathi_voice_mode", mode);
+    } catch {}
+    this.notifyState();
+  }
+
   /**
    * Maps user-selected response language name or code to standardized BCP-47 locale
    */
@@ -111,7 +208,6 @@ export class VoiceService {
   } {
     const l = rawLang.toLowerCase().trim();
 
-    // Hinglish check: If text contains Devanagari characters, prefer hi-IN, else en-IN
     if (l === "hinglish" || l.includes("hinglish")) {
       const hasDevanagari = /[\u0900-\u097F]/.test(sampleText);
       return hasDevanagari
@@ -153,41 +249,14 @@ export class VoiceService {
     return { primaryLocale: "en-IN", baseLang: "en" };
   }
 
-  /**
-   * Selects the best available female/natural voice for the target language.
-   * Priority hierarchy:
-   * 1. Female voice whose language exactly matches the primary locale (e.g. hi-IN).
-   * 2. Female Indian voice for the response language.
-   * 3. Female voice for the language family (e.g. hi, ta).
-   * 4. Any natural language-matched voice.
-   * 5. Browser default voice.
-   */
   public selectBestVoice(primaryLocale: string, baseLang: string): SpeechSynthesisVoice | null {
     const voices = this.getVoices();
     if (!voices || voices.length === 0) return null;
 
     const femaleKeywords = [
-      "female",
-      "natural",
-      "premium",
-      "neural",
-      "google",
-      "microsoft",
-      "aditi",
-      "rishi",
-      "heera",
-      "samantha",
-      "priya",
-      "veena",
-      "zira",
-      "swara",
-      "jenny",
-      "karen",
-      "serena",
-      "sangeeta",
-      "lekha",
-      "kalpana",
-      "pooja",
+      "female", "natural", "premium", "neural", "google", "microsoft",
+      "aditi", "rishi", "heera", "samantha", "priya", "veena", "zira",
+      "swara", "jenny", "karen", "serena", "sangeeta", "lekha", "kalpana", "pooja"
     ];
 
     const isFemale = (voice: SpeechSynthesisVoice): boolean => {
@@ -199,168 +268,101 @@ export class VoiceService {
     const targetNorm = normalizeLang(primaryLocale);
     const baseNorm = normalizeLang(baseLang);
 
-    // 1. Exact match locale + female
     const exactFemale = voices.find(
       (v) => normalizeLang(v.lang) === targetNorm && isFemale(v)
     );
     if (exactFemale) return exactFemale;
 
-    // 2. Exact match locale (any gender)
     const exactAny = voices.find((v) => normalizeLang(v.lang) === targetNorm);
     if (exactAny) return exactAny;
 
-    // 3. Indian locale variant + female (e.g., en-IN or hi-IN if looking for Indian accent)
     const indianFemale = voices.find(
       (v) => normalizeLang(v.lang).includes("-in") && normalizeLang(v.lang).startsWith(baseNorm) && isFemale(v)
     );
     if (indianFemale) return indianFemale;
 
-    // 4. Base language prefix match + female (e.g., 'hi', 'ta', 'bn')
     const baseFemale = voices.find(
       (v) => normalizeLang(v.lang).startsWith(baseNorm) && isFemale(v)
     );
     if (baseFemale) return baseFemale;
 
-    // 5. Base language prefix match (any gender)
     const baseAny = voices.find((v) => normalizeLang(v.lang).startsWith(baseNorm));
     if (baseAny) return baseAny;
 
-    // 6. If Odia (or-IN / od-IN) alias check
-    if (baseNorm === "or" || baseNorm === "od") {
-      const odiaMatch = voices.find(
-        (v) => normalizeLang(v.lang).startsWith("or") || normalizeLang(v.lang).startsWith("od")
-      );
-      if (odiaMatch) return odiaMatch;
-    }
-
-    // 7. General Indian English / Hindi fallback with female preference
-    const enInFemale = voices.find(
-      (v) => normalizeLang(v.lang) === "en-in" && isFemale(v)
-    );
-    if (enInFemale) return enInFemale;
-
-    // 8. General female voice on device
-    const generalFemale = voices.find((v) => isFemale(v));
-    if (generalFemale) return generalFemale;
-
-    // 9. Device default voice
     const defaultVoice = voices.find((v) => v.default);
     return defaultVoice || voices[0] || null;
   }
 
-  /**
-   * Preprocesses response text for spoken audio:
-   * - Strips Markdown formatting, code blocks, raw URLs, bracketed citations, and emojis
-   * - Preserves official statutory Act titles, Scheme names, helpline numbers, and legal terms
-   */
   public cleanTextForSpeech(rawText: string): string {
     if (!rawText) return "";
 
     let text = rawText;
-
-    // 1. Remove Markdown links [Text](url) -> Text
     text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-
-    // 2. Remove raw web URLs
     text = text.replace(/https?:\/\/[^\s)]+/g, "");
-
-    // 3. Remove Markdown headings (### Heading -> Heading)
     text = text.replace(/^#{1,6}\s+/gm, "");
-
-    // 4. Remove bold, italic, strikethrough markers
     text = text.replace(/\*\*([^*]+)\*\*/g, "$1");
     text = text.replace(/\*([^*]+)\*/g, "$1");
     text = text.replace(/__([^_]+)__/g, "$1");
     text = text.replace(/_([^_]+)_/g, "$1");
     text = text.replace(/~~([^~]+)~~/g, "$1");
-
-    // 5. Remove code blocks and inline code
     text = text.replace(/```[\s\S]*?```/g, "");
     text = text.replace(/`([^`]+)`/g, "$1");
-
-    // 6. Convert bullet lists and numbered steps into natural spoken sentences
     text = text.replace(/^\s*[-*+]\s+/gm, "");
     text = text.replace(/^\s*(\d+)\.\s+/gm, "Step $1. ");
-
-    // 7. Remove tables and horizontal dividers
     text = text.replace(/\|/g, ", ");
     text = text.replace(/[-]{3,}/g, "");
-
-    // 8. Remove bracketed citations and technical IDs e.g. [Source: RTI Act 2005] or [cit_123]
     text = text.replace(/\[(?:Source|Citation|Ref|Section|cit_[a-z0-9_]+)[^\]]*\]/gi, "");
-
-    // 9. Normalize currency symbols for clear speech
     text = text.replace(/₹\s*(\d+(?:,\d+)*(?:\.\d+)?)/g, "Rupees $1");
     text = text.replace(/Rs\.?\s*(\d+(?:,\d+)*(?:\.\d+)?)/gi, "Rupees $1");
-
-    // 10. Remove emojis and decorative symbols
     text = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "");
-
-    // 11. Normalize newlines into sentence pauses
     text = text.replace(/\n{2,}/g, ". ");
     text = text.replace(/\n/g, ", ");
-
-    // 12. Normalize consecutive punctuation and whitespace
     text = text.replace(/\s+/g, " ");
     text = text.replace(/\.\s*\./g, ".");
     text = text.replace(/,\s*,/g, ",");
-    text = text.trim();
-
-    return text;
+    return text.trim();
   }
 
-  /**
-   * Splits long text into smaller sentence/paragraph chunks for smooth continuous playback
-   * without running into browser utterance length timeouts.
-   */
   public chunkText(text: string, maxChunkLength = 220): string[] {
     if (text.length <= maxChunkLength) return [text];
-
-    // Match sentences ending in punctuation or newlines
     const rawSentences = text.match(/[^.!?।\n]+[.!?।\n]+/g) || [text];
     const chunks: string[] = [];
     let current = "";
 
     for (const sentence of rawSentences) {
       if ((current + sentence).length > maxChunkLength) {
-        if (current.trim()) {
-          chunks.push(current.trim());
-        }
+        if (current.trim()) chunks.push(current.trim());
         current = sentence;
       } else {
         current += sentence;
       }
     }
 
-    if (current.trim()) {
-      chunks.push(current.trim());
-    }
-
+    if (current.trim()) chunks.push(current.trim());
     return chunks.length > 0 ? chunks : [text.slice(0, maxChunkLength)];
   }
 
+  private pendingText = "";
+  private pendingLang = "English";
+
   /**
    * Main Speak Method
-   * Begins or restarts speech for a specific message response
+   * Requests Sarvam Bulbul Studio Voice first; falls back smoothly to Web Speech API.
    */
-  public speak(
+  public async speak(
     rawText: string,
     options?: {
       targetLangCode?: string;
       messageId?: string;
+      speaker?: string;
       onStart?: () => void;
       onEnd?: () => void;
       onError?: (err: any) => void;
     }
   ) {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      const err = new Error("Voice playback isn't available in this browser.");
-      options?.onError?.(err);
-      return;
-    }
-
-    const msgId = options?.messageId || "active_msg";
+    const msgId = options?.messageId || "msg_" + Date.now();
     const rawLang = options?.targetLangCode || "English";
+    const speakerToUse = (options?.speaker || this.currentSpeaker || "priya").toLowerCase();
 
     // 1. If currently paused on the same message -> Resume
     if (this.status === "paused" && this.activeMessageId === msgId) {
@@ -368,7 +370,7 @@ export class VoiceService {
       return;
     }
 
-    // 2. Stop any existing playback on this or another message
+    // 2. Stop any existing playback
     this.stop();
 
     const cleanText = this.cleanTextForSpeech(rawText);
@@ -378,36 +380,109 @@ export class VoiceService {
       return;
     }
 
-    const { primaryLocale, baseLang } = this.mapLanguageToBCP47(rawLang, cleanText);
-    const selectedVoice = this.selectBestVoice(primaryLocale, baseLang);
-
-    // Development diagnostic logs
-    console.log(`[VOICE] Available voices: ${this.availableVoices.length}`);
-    console.log(`[VOICE] Selected voice: ${selectedVoice ? selectedVoice.name : "Browser Default"}`);
-    console.log(`[VOICE] Selected language: ${primaryLocale}`);
-
+    this.pendingText = cleanText;
+    this.pendingLang = rawLang;
     this.activeMessageId = msgId;
-    this.activeLanguage = primaryLocale;
-    this.activeVoiceName = selectedVoice ? selectedVoice.name : null;
     this.onEndCallback = options?.onEnd || null;
     this.onErrorCallback = options?.onError || null;
 
-    // Split into comfortable chunks for long responses
-    this.textChunks = this.chunkText(cleanText);
+    // 3. Try Studio Voice (Sarvam Bulbul) first unless explicitly forced to browser mode
+    if (this.voiceMode !== "browser") {
+      this.setStatus("loading");
+      options?.onStart?.();
+
+      const cacheKey = `${cleanText.slice(0, 100)}_${rawLang}_${speakerToUse}`;
+      const cachedAudio = this.audioCache.get(cacheKey);
+
+      if (cachedAudio) {
+        console.log("[VOICE] Replaying cached Sarvam Studio Voice audio");
+        this.playStudioAudio(cachedAudio, rawLang, speakerToUse);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/voice/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: cleanText,
+            targetLanguage: rawLang,
+            speaker: speakerToUse,
+            pace: 1.0,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.audioBase64) {
+            this.audioCache.set(cacheKey, data.audioBase64);
+            this.playStudioAudio(data.audioBase64, rawLang, data.speaker || speakerToUse);
+            return;
+          }
+        }
+        console.warn("[VOICE] Sarvam TTS endpoint did not return audio, falling back to browser SpeechSynthesis...");
+      } catch (err) {
+        console.warn("[VOICE] Sarvam TTS request failed, falling back to browser SpeechSynthesis:", err);
+      }
+    }
+
+    // 4. Fallback to Browser Native SpeechSynthesis
+    this.fallbackToBrowserSpeech();
+  }
+
+  private playStudioAudio(base64Audio: string, lang: string, speaker: string) {
+    if (!this.audioElement) {
+      this.fallbackToBrowserSpeech();
+      return;
+    }
+
+    try {
+      this.audioSource = "studio";
+      this.activeVoiceName = `Sarvam Bulbul (${speaker})`;
+      this.activeLanguage = lang;
+      this.currentProgress = 0;
+
+      const audioSrc = `data:audio/wav;base64,${base64Audio}`;
+      this.audioElement.src = audioSrc;
+      this.audioElement.play().catch((err) => {
+        console.warn("[VOICE] Audio play failed:", err);
+        this.fallbackToBrowserSpeech();
+      });
+    } catch (e) {
+      console.warn("[VOICE] Exception setting audio source:", e);
+      this.fallbackToBrowserSpeech();
+    }
+  }
+
+  private fallbackToBrowserSpeech() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      this.setStatus("idle");
+      this.onErrorCallback?.(new Error("Voice playback isn't available in this browser."));
+      return;
+    }
+
+    const { primaryLocale, baseLang } = this.mapLanguageToBCP47(this.pendingLang, this.pendingText);
+    const selectedVoice = this.selectBestVoice(primaryLocale, baseLang);
+
+    console.log(`[VOICE] Fallback voice: ${selectedVoice ? selectedVoice.name : "Browser Default"} (${primaryLocale})`);
+
+    this.audioSource = "browser";
+    this.activeLanguage = primaryLocale;
+    this.activeVoiceName = selectedVoice ? selectedVoice.name : "Browser Voice";
+    this.currentProgress = 0;
+
+    this.textChunks = this.chunkText(this.pendingText);
     this.currentChunkIndex = 0;
 
-    options?.onStart?.();
     this.playNextChunk(primaryLocale, selectedVoice);
   }
 
-  /**
-   * Plays chunks sequentially
-   */
   private playNextChunk(locale: string, voice: SpeechSynthesisVoice | null) {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
 
     if (this.currentChunkIndex >= this.textChunks.length) {
       this.currentUtterance = null;
+      this.currentProgress = 100;
       this.setStatus("finished");
       this.onEndCallback?.();
       return;
@@ -421,8 +496,6 @@ export class VoiceService {
     }
 
     const utterance = new SpeechSynthesisUtterance(chunk);
-    
-    // Soft, comfortable, professional female parameters
     utterance.rate = 0.92;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
@@ -435,6 +508,7 @@ export class VoiceService {
     }
 
     utterance.onstart = () => {
+      this.currentProgress = ((this.currentChunkIndex + 0.1) / this.textChunks.length) * 100;
       if (this.status !== "playing") {
         this.setStatus("playing");
       }
@@ -442,20 +516,19 @@ export class VoiceService {
 
     utterance.onend = () => {
       this.currentChunkIndex++;
+      this.currentProgress = (this.currentChunkIndex / this.textChunks.length) * 100;
       if (this.currentChunkIndex < this.textChunks.length) {
         this.playNextChunk(locale, voice);
       } else {
         this.currentUtterance = null;
+        this.currentProgress = 100;
         this.setStatus("finished");
         this.onEndCallback?.();
       }
     };
 
     utterance.onerror = (e) => {
-      // Ignore 'interrupted' or 'canceled' events caused by user clicking stop/pause/new message
-      if (e.error === "interrupted" || e.error === "canceled") {
-        return;
-      }
+      if (e.error === "interrupted" || e.error === "canceled") return;
       console.warn("[VOICE] SpeechSynthesis error:", e);
       this.currentUtterance = null;
       this.setStatus("idle");
@@ -467,10 +540,13 @@ export class VoiceService {
     window.speechSynthesis.speak(utterance);
   }
 
-  /**
-   * Pauses active speech playback
-   */
   public pause() {
+    if (this.audioSource === "studio" && this.audioElement) {
+      this.audioElement.pause();
+      this.setStatus("paused");
+      return;
+    }
+
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
         window.speechSynthesis.pause();
@@ -479,10 +555,12 @@ export class VoiceService {
     }
   }
 
-  /**
-   * Resumes paused speech playback
-   */
   public resume() {
+    if (this.audioSource === "studio" && this.audioElement) {
+      this.audioElement.play().then(() => this.setStatus("playing")).catch(() => {});
+      return;
+    }
+
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
@@ -491,16 +569,19 @@ export class VoiceService {
     }
   }
 
-  /**
-   * Stops all active speech synthesis, cancels utterance queue, and resets to idle
-   */
   public stop() {
+    if (this.audioElement) {
+      this.audioElement.pause();
+      this.audioElement.currentTime = 0;
+    }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     this.textChunks = [];
     this.currentChunkIndex = 0;
     this.currentUtterance = null;
+    this.audioSource = null;
+    this.currentProgress = 0;
     this.setStatus("idle");
   }
 }
