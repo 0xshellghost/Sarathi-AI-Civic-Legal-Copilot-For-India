@@ -80,7 +80,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   }`}
                 >
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium">{lang.nativeName}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium">{lang.nativeName}</span>
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-tertiary-fixed/60 text-on-tertiary-fixed">
+                        <span className="material-symbols-outlined text-[10px]">graphic_eq</span>
+                        <span>Studio Voice</span>
+                      </span>
+                    </div>
                     <span className="text-xs text-on-surface-variant">{lang.name}</span>
                   </div>
                   {isCurrent && (

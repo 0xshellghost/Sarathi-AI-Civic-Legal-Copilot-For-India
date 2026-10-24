@@ -32,8 +32,11 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 }) => {
   const [feedbackGiven, setFeedbackGiven] = useState<string | null>(null);
   const [voicePlaybackState, setVoicePlaybackState] = useState<
-    "idle" | "playing" | "paused" | "finished"
+    "idle" | "loading" | "playing" | "paused" | "finished"
   >("idle");
+  const [audioSource, setAudioSource] = useState<"studio" | "browser" | null>(null);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+  const [activeSpeaker, setActiveSpeaker] = useState(voiceService.getSpeaker());
   const [voiceUnavailableWarning, setVoiceUnavailableWarning] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -72,9 +75,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     const unsubscribe = voiceService.subscribeState((state) => {
       if (state.activeMessageId === message.id) {
         setVoicePlaybackState(state.status);
+        setAudioSource(state.audioSource);
+        setPlaybackProgress(state.progress);
+        setActiveSpeaker(state.speaker);
       } else {
         setVoicePlaybackState((prev) =>
-          prev === "playing" || prev === "paused" ? "idle" : prev
+          prev === "playing" || prev === "paused" || prev === "loading" ? "idle" : prev
         );
       }
     });
@@ -423,15 +429,18 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         {/* Assistant Actions Bar: Speech, Thumbs, and Report an Issue */}
         {!isUser && (
           <div className="mt-4 pt-3 border-t border-surface-container flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={handleSpeak}
+                disabled={voicePlaybackState === "loading"}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   voicePlaybackState === "playing"
-                    ? "bg-primary text-on-primary shadow-xs ring-2 ring-primary/30 animate-pulse"
+                    ? "bg-primary text-on-primary shadow-xs ring-2 ring-primary/30"
                     : voicePlaybackState === "paused"
                     ? "bg-secondary-container text-on-secondary-container"
+                    : voicePlaybackState === "loading"
+                    ? "bg-surface-container-high text-on-surface opacity-80 cursor-wait"
                     : "bg-surface-container text-on-surface hover:bg-surface-container-high hover:text-primary"
                 }`}
                 title={
@@ -441,7 +450,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     ? "Resume speech playback"
                     : voicePlaybackState === "finished"
                     ? "Listen to response again"
-                    : "Listen aloud in clear native voice"
+                    : "Listen aloud in crystal-clear studio voice"
                 }
                 aria-label={
                   voicePlaybackState === "playing"
@@ -453,9 +462,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     : "Listen to SARATHI response"
                 }
               >
-                {voicePlaybackState === "playing" ? (
+                {voicePlaybackState === "loading" ? (
                   <>
-                    <span className="material-symbols-outlined text-[16px]">pause</span>
+                    <span className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span>Preparing audio...</span>
+                  </>
+                ) : voicePlaybackState === "playing" ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-pulse">pause</span>
                     <span>Pause</span>
                   </>
                 ) : voicePlaybackState === "paused" ? (
@@ -471,7 +485,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                 ) : (
                   <>
                     <span className="material-symbols-outlined text-[16px]">volume_up</span>
-                    <span>Listen (TTS)</span>
+                    <span>Listen ({activeSpeaker === "shubh" ? "Shubh" : "Priya"})</span>
                   </>
                 )}
               </button>
@@ -487,6 +501,42 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                 >
                   <span className="material-symbols-outlined text-[14px]">stop</span>
                 </button>
+              )}
+
+              {/* Speaker Persona Toggle (Priya / Shubh) */}
+              <button
+                type="button"
+                onClick={() => {
+                  const nextSpeaker = activeSpeaker === "priya" ? "shubh" : "priya";
+                  setActiveSpeaker(nextSpeaker);
+                  voiceService.setSpeaker(nextSpeaker);
+                  if (voicePlaybackState === "playing" || voicePlaybackState === "paused") {
+                    voiceService.stop();
+                  }
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-outline-variant/60 bg-surface-container-low hover:bg-surface-container text-[11px] font-medium text-on-surface transition-all cursor-pointer"
+                title={`Click to switch voice persona (Current: ${activeSpeaker === "shubh" ? "Shubh - Male" : "Priya - Female"})`}
+              >
+                <span className="material-symbols-outlined text-[13px] text-primary">record_voice_over</span>
+                <span>Voice: <strong>{activeSpeaker === "shubh" ? "Shubh" : "Priya"}</strong></span>
+              </button>
+
+              {/* Audio Source Badge (Studio vs Browser) */}
+              {audioSource === "studio" && (voicePlaybackState === "playing" || voicePlaybackState === "paused") && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 animate-fadeIn">
+                  <span className="material-symbols-outlined text-[12px] animate-pulse">graphic_eq</span>
+                  <span>Sarvam Studio Voice</span>
+                </span>
+              )}
+
+              {/* Playback Progress Indicator */}
+              {(voicePlaybackState === "playing" || voicePlaybackState === "paused") && playbackProgress > 0 && (
+                <div className="w-16 sm:w-24 h-1.5 bg-surface-container-high rounded-full overflow-hidden self-center">
+                  <div
+                    className="h-full bg-primary transition-all duration-200"
+                    style={{ width: `${Math.min(100, Math.max(0, playbackProgress))}%` }}
+                  />
+                </div>
               )}
 
               {/* Voice unavailable fallback message */}

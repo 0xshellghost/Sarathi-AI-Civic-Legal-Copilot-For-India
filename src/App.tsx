@@ -1032,7 +1032,7 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
                   {voiceState === "transcribing" && (
                     <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary-fixed text-on-primary-fixed text-xs font-medium border border-primary-fixed-dim shadow-xs animate-in fade-in">
                       <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <span>Transcribing with <strong>Groq Whisper (whisper-large-v3)</strong>...</span>
+                      <span>Transcribing with <strong>Sarvam Saaras (Indic Speech AI)</strong>...</span>
                     </div>
                   )}
 
@@ -1094,12 +1094,12 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
                           </span>
                         </button>
 
-                        {/* Speech to Text Microphone Button (Groq Whisper) */}
+                        {/* Speech to Text Microphone Button (Sarvam Saaras / Groq Whisper) */}
                         <button
                           id="voice-mic-btn"
                           type="button"
                           onClick={handleVoiceToggle}
-                          className={`p-2 rounded-xl transition-all ${
+                          className={`p-2 rounded-xl transition-all cursor-pointer ${
                             voiceState === "recording"
                               ? "bg-error text-on-error animate-pulse shadow-xs"
                               : voiceState === "transcribing"
@@ -1108,10 +1108,10 @@ How can I assist you today? Feel free to write in your own language (Hindi, Engl
                           }`}
                           title={
                             voiceState === "recording"
-                              ? "Click to stop recording and transcribe with Groq Whisper"
+                              ? "Click to stop recording and transcribe"
                               : voiceState === "transcribing"
-                              ? "Transcribing with Groq Whisper..."
-                              : "Voice input in your native Indian language (Groq Whisper)"
+                              ? "Transcribing with Sarvam Saaras..."
+                              : "Voice input in your native Indian language (Powered by Sarvam AI)"
                           }
                         >
                           <span className="material-symbols-outlined text-[20px]">

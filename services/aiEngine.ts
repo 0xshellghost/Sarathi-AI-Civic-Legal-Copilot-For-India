@@ -13,6 +13,7 @@
  */
 
 import { GoogleGenAI, Type } from "@google/genai";
+import { SarvamService } from "./sarvam";
 
 // Configured OpenRouter fallback API Key resolver
 function getOpenRouterApiKey(): string {
@@ -23,6 +24,7 @@ function getOpenRouterApiKey(): string {
   if (process.env.OPENROUTER_MODELS && process.env.OPENROUTER_MODELS.startsWith("sk-")) {
     return process.env.OPENROUTER_MODELS.trim();
   }
+  return "";
 }
 
 // Primary Gemini model cascade
@@ -85,7 +87,7 @@ export interface AIOptions {
 
 export interface AIExecutionResult {
   text: string;
-  provider: "gemini" | "openrouter";
+  provider: "gemini" | "openrouter" | "sarvam";
   modelUsed: string;
 }
 
@@ -279,7 +281,29 @@ export async function generateWithAI(options: AIOptions): Promise<AIExecutionRes
       modelUsed: fallbackResult.model,
     };
   } catch (fallbackError: any) {
-    console.error("[AI Engine Critical] Both Primary (Gemini) and Secondary (OpenRouter) failed:", fallbackError?.message || fallbackError);
+    // 3. TERTIARY PROVIDER: Sarvam Indic LLM (if configured)
+    if (SarvamService.isConfigured() && !simulateOpenRouterFailure) {
+      try {
+        console.log("[AI Engine] Attempting Sarvam Indic LLM tertiary fallback...");
+        const userPromptText = typeof prompt === "string" ? prompt : JSON.stringify(prompt);
+        const sarvamRes = await SarvamService.chatCompletion(
+          [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: userPromptText },
+          ],
+          temperature
+        );
+        return {
+          text: sarvamRes.text,
+          provider: "sarvam",
+          modelUsed: sarvamRes.model,
+        };
+      } catch (sarvamErr: any) {
+        console.warn("[AI Engine] Sarvam Indic LLM fallback also failed:", sarvamErr?.message || sarvamErr);
+      }
+    }
+
+    console.error("[AI Engine Critical] All AI providers failed:", fallbackError?.message || fallbackError);
     throw new Error(
       "Sorry, SARATHI is temporarily unable to generate a source-grounded response. Please try again in a moment."
     );
