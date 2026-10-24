@@ -425,53 +425,56 @@ The design also supports:
 
 ---
 
-# 🎙️ Voice Interaction
+# 🎙️ Voice Interaction & Studio Audio Synthesis
 
-For voice input, SARATHI uses:
+SARATHI features an advanced multi-provider voice pipeline built specifically for Indian accents and 11 Indic languages:
 
-**Groq Whisper → Speech-to-Text**
+### 1. Speech-to-Text (ASR)
+**Sarvam Saaras v4 (Primary Indic ASR) → Groq Whisper (Fallback) → Web Speech API**
 
 The flow is:
-
 ```text
 Microphone
     ↓
-Audio recording
+Audio Recording (25MB max)
     ↓
-Groq Whisper
+Primary: Sarvam Saaras v4 (High-accuracy native scripts, Hinglish code-mixing)
+    ↓ (if unconfigured or rate-limited)
+Secondary: Groq Whisper (whisper-large-v3)
+    ↓ (if offline)
+Browser Web Speech API
     ↓
-Transcribed text
+Transcribed Text
     ↓
-Existing SARATHI pipeline
+Existing SARATHI AI Pipeline
 ```
 
-Voice is intentionally treated as an input layer, not a separate reasoning system.
+### 2. Studio Text-to-Speech (TTS)
+**Sarvam Bulbul v3 (Studio Voice) → Web Speech API (Offline Fallback)**
 
-This means typed and spoken queries go through the same:
+- **Studio Quality**: Ultra-realistic, expressive Indian voices in 11 languages (Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Indian English).
+- **Voice Personas**: Citizen-selectable personas including **Priya** (warm Indian female) and **Shubh** (clear Indian male).
+- **High-Speed In-Memory LRU Cache**: Repeated audio requests (or clicking replay) are served instantly (<50ms) from cache with zero duplicate API hits.
+- **Audio Controls**: Interactive progress bar, Play, Pause, Resume, Stop, and Replay.
 
-- Problem Analyzer
-- RAG
-- Reasoning
-- Citation verification
-- Language handling
-
-pipeline.
+Voice is intentionally treated as an integrated input/output layer, not a separate reasoning system. Typed and spoken queries go through the same source-grounded RAG and citation verification pipeline.
 
 ---
 
 # 🧠 AI Reliability Architecture
 
-SARATHI uses a provider-independent AI layer.
+SARATHI uses a multi-tier, provider-resilient AI layer:
 
 ### Primary
-**Gemini**
+**Google Gemini** (Gemini 3.1 Flash Lite / 3.7 Flash)
 
-### Fallback
-**OpenRouter**
+### Secondary Fallback
+**OpenRouter** (Llama 3.3 70B, Mistral Small 24B, Qwen 2.5 72B)
 
-If the primary provider experiences a relevant quota/rate-limit/service failure, the fallback can be used without exposing provider details to the citizen.
+### Tertiary Indic Fallback
+**Sarvam AI** (Sarvam Indic LLM / Chat Completions)
 
-The application's civic/legal safety rules remain active regardless of the provider used.
+If the primary provider experiences a quota/rate-limit/transient failure, the fallback cascade is used transparently without exposing provider details or errors to the citizen. Legal safety rules and RAG grounding remain strictly active regardless of the provider used.
 
 ---
 
