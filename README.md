@@ -544,18 +544,19 @@ Key principles:
 
 | Layer | Technology |
 |---|---|
-| Frontend | React / TypeScript |
-| Styling | Tailwind CSS |
-| Backend/API | TypeScript server/API routes |
-| AI reasoning | Gemini |
-| AI fallback | OpenRouter |
-| Speech-to-Text | Groq Whisper |
-| Authentication | Firebase Authentication |
-| Database | Firebase Firestore |
-| File storage | Firebase Storage |
-| Retrieval | Embeddings + application-level retrieval |
-| Document generation | DOCX / PDF generation |
-| Deployment | Firebase / Google AI Studio compatible deployment |
+| Frontend | React 19 / TypeScript / Vite |
+| Styling | Tailwind CSS v4 |
+| Backend/API | Express TypeScript server & resilience architecture |
+| Primary AI Reasoning | Google Gemini (3.1 Flash Lite / 3.7 Flash) |
+| Fallback AI Cascade | OpenRouter (Llama 3.3 70B, Mistral, Qwen) + Sarvam Indic LLM |
+| Studio Voice (TTS) | Sarvam AI Bulbul v3 (11 Indic languages, Priya & Shubh personas) |
+| Speech-to-Text (ASR) | Sarvam AI Saaras v4 (Indic-native) + Groq Whisper v3 fallback |
+| Translation Engine | Sarvam Mayura v1 + Gemini Multilingual Preserving Localizer |
+| Authentication | Firebase Authentication (Anonymous & Google OAuth) |
+| Database | Firebase Firestore (Cases, feedback, audits) |
+| File Storage | Firebase Cloud Storage |
+| Retrieval (RAG) | Gemini Embeddings + Lexical TF-IDF + Tier Authority Scoring |
+| Document Generation | DOCX (docx) & PDF (pdf-lib) client/server generators |
 
 > The exact implementation may evolve, but the design goal remains the same: **simple, reliable, and deployable within a hackathon environment.**
 
